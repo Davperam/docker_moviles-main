@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Lista de expedientes de medicamentos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let expedientemedicamento of expedientemedicamentos">
+      <ion-label class="ion-text-wrap">
+        <h2>{{ expedientemedicamento.idexpedientemedicamento }}</h2>
+        <p>{{ expedientemedicamento.idexpediente }}</p>
+      </ion-label>
+      <ion-button slot="end" color="warning" [routerLink]="['/expedientemedicamento-view', expedientemedicamento.idexpedientemedicamento]">
+        <ion-icon name="eye-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

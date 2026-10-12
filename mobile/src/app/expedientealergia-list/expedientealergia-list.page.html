@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Lista de expedientes de alergia</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let expedienteAlergia of expedienteAlergias">
+      <ion-label class="ion-text-wrap">
+        <h2>{{ expedienteAlergia.idexpedientealergia }}</h2>
+        <h2>{{ expedienteAlergia.idalergia }}</h2>
+      </ion-label>
+      <ion-button slot="end" color="warning" [routerLink]="['/expedientealergia-view', expedienteAlergia.idexpedientealergia]">
+        <ion-icon name="eye-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

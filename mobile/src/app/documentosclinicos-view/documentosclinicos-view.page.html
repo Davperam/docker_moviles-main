@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/documentosclinicos-list"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Documentos clínico</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-text color="danger" *ngIf="mensajeError">
+    <p class="ion-padding">{{ mensajeError }}</p>
+  </ion-text>
+  
+  <ion-card *ngIf="documento as detalle">
+    <ion-card-header>
+      <ion-card-title>{{ detalle.idexpediente }}</ion-card-title>
+      <ion-card-subtitle>Nombre # {{ detalle.nombredocumento }}</ion-card-subtitle>
+      <ion-card-subtitle>Ruta # {{ detalle.rutaarchivo }}</ion-card-subtitle>
+      <ion-card-subtitle>Tipo # {{ detalle.tipodocumento }}</ion-card-subtitle>
+      <ion-card-subtitle>Fecha de carga # {{ detalle.fechacarga }}</ion-card-subtitle>
+    </ion-card-header>
+
+  </ion-card>
+</ion-content>

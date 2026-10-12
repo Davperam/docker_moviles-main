@@ -1,0 +1,90 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cerrarModal()">
+        Cancelar
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nuevo paciente</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form *ngIf="pacienteForm" [formGroup]="pacienteForm" (ngSubmit)="guardarPaciente()">
+    <ion-list>
+      <ion-item>
+        <ion-input label="Nombre" labelPlacement="stacked" type="text" formControlName="nombre" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('nombre') as error">
+        {{ error }}
+      </ion-note>
+
+      <ion-item>
+        <ion-input label="Paterno" labelPlacement="stacked" type="text" formControlName="paterno" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('paterno') as error">
+        {{ error }}
+      </ion-note>
+
+      <ion-item>
+        <ion-input label="Materno" labelPlacement="stacked" type="text" formControlName="materno" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('materno') as error">
+        {{ error }}
+      </ion-note>
+
+      <ion-item>
+        <ion-input label="Nacimiento" labelPlacement="stacked" type="text" formControlName="nacimiento" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('nacimiento') as error">
+        {{ error }}
+      </ion-note>
+
+      <ion-item>
+        <ion-input label="Tiposangre" labelPlacement="stacked" type="text" formControlName="tiposangre" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('tiposangre') as error">
+        {{ error }}
+      </ion-note>
+
+      <ion-item>
+        <ion-textarea label="Direccion" labelPlacement="stacked" formControlName="direccion" autoGrow="true"></ion-textarea>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('direccion') as error">
+        {{ error }}
+      </ion-note>
+
+      <ion-item>
+        <ion-input label="Telefono" labelPlacement="stacked" type="text" formControlName="telefono" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('telefono') as error">
+        {{ error }}
+      </ion-note>
+
+      <ion-item>
+        <ion-input label="Correo" labelPlacement="stacked" type="text" formControlName="correo" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('correo') as error">
+        {{ error }}
+      </ion-note>
+
+      <ion-item>
+        <ion-input label="Registro" labelPlacement="stacked" type="text" formControlName="registro" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('registro') as error">
+        {{ error }}
+      </ion-note>
+
+      <ion-item>
+        <ion-input label="Activo" labelPlacement="stacked" type="text" formControlName="activo" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('activo') as error">
+        {{ error }}
+      </ion-note>
+    </ion-list>
+
+    <ion-button expand="block" type="submit" class="ion-margin-top" [disabled]="guardando">
+      {{ guardando ? 'Guardando...' : 'Guardar' }}
+    </ion-button>
+  </form>
+</ion-content>

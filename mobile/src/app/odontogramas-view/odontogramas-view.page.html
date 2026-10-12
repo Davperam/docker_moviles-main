@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/odontogramas-list"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Descripción de odontograma</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-text color="danger" *ngIf="mensajeError">
+    <p class="ion-padding">{{ mensajeError }}</p>
+  </ion-text>
+  
+  <ion-card *ngIf="odontograma as detalle">
+    <ion-card-header>
+      <ion-card-title>{{ detalle.idexpediente }}</ion-card-title>
+      <ion-card-subtitle>Diente # {{ detalle.diente }}</ion-card-subtitle>
+      <ion-card-subtitle>Observaciones # {{ detalle.observaciones }}</ion-card-subtitle>
+      <ion-card-subtitle>Estado # {{ detalle.estado }}</ion-card-subtitle>
+      <ion-card-subtitle>Tratamiento # {{ detalle.tratamiento }}</ion-card-subtitle>
+      <ion-card-subtitle>Fecha de registro # {{ detalle.fecharegistro }}</ion-card-subtitle>
+    </ion-card-header>
+
+  </ion-card>
+</ion-content>

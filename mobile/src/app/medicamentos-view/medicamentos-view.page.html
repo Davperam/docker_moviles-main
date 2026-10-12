@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/medicamentos-list"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Descripción del medicamento</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-text color="danger" *ngIf="mensajeError">
+    <p class="ion-padding">{{ mensajeError }}</p>
+  </ion-text>
+  
+  <ion-card *ngIf="medicamento as detalle">
+    <ion-card-header>
+      <ion-card-title>{{ detalle.idmedicamento }}</ion-card-title>
+      <ion-card-subtitle>{{ detalle.nombre }}</ion-card-subtitle>
+      <ion-card-subtitle>{{ detalle.descripcion }}</ion-card-subtitle>
+    </ion-card-header>
+
+  </ion-card>
+</ion-content>

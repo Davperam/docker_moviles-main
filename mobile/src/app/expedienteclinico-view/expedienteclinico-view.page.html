@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/expedienteclinico-list"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Descripción del expediente clínico</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-text color="danger" *ngIf="mensajeError">
+    <p class="ion-padding">{{ mensajeError }}</p>
+  </ion-text>
+  
+  <ion-card *ngIf="expediente as detalle">
+    <ion-card-header>
+      <ion-card-title>{{ detalle.idpaciente }}</ion-card-title>
+      <ion-card-subtitle>Motivo # {{ detalle.enfermedades }}</ion-card-subtitle>
+      <ion-card-subtitle>Observaciones # {{ detalle.observaciones }}</ion-card-subtitle>
+      <ion-card-subtitle>Apertura # {{ detalle.apertura }}</ion-card-subtitle>
+    </ion-card-header>
+
+  </ion-card>
+</ion-content>

@@ -1,0 +1,19 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Lista de documentos clínicos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let documento of documentos">
+      <ion-label class="ion-text-wrap">
+        <h2>{{ documento.nombredocumento }}</h2>
+        <p>{{ documento.fechacarga }}</p>
+      </ion-label>
+      <ion-button slot="end" color="warning" [routerLink]="['/documentosclinicos-view', documento.iddocumento]">
+        <ion-icon name="eye-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

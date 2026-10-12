@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Lista de estados de cita</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let estadocita of estadocitas">
+      <ion-label class="ion-text-wrap">
+        <h2>{{ estadocita.nombre }}</h2>
+      </ion-label>
+      <ion-button slot="end" color="warning" [routerLink]="['/estadocita-view', estadocita.idestadocita]">
+        <ion-icon name="eye-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

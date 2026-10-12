@@ -1,0 +1,15 @@
+<app-toolbar nombre="Alergias"></app-toolbar>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let alergia of alergias">
+      <ion-label class="ion-text-wrap">
+        <h2>{{ alergia.nombre }}</h2>
+      </ion-label>
+      <ion-button slot="end" color="warning" [routerLink]="['/alergia-view', alergia.idalergia]">
+        <ion-icon name="eye-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+  
+</ion-content>

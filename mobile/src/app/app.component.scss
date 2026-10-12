@@ -1,0 +1,32 @@
+@font-face {
+  font-family: 'Playpen Sans';
+  src: url('../assets/font/prueba.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+:root {
+  --ion-font-family: 'Playpen Sans', cursive;
+}
+
+:root {
+    --ion-font-family: 'Young Serif', serif;
+
+	--ion-color-prueba: #49b69b;
+	--ion-color-prueba-rgb: 73,182,155;
+	--ion-color-prueba-contrast: #000000;
+	--ion-color-prueba-contrast-rgb: 0,0,0;
+	--ion-color-prueba-shade: #40a088;
+	--ion-color-prueba-tint: #5bbda5;
+}
+
+.ion-color-prueba {
+	--ion-color-base: var(--ion-color-prueba);
+	--ion-color-base-rgb: var(--ion-color-prueba-rgb);
+	--ion-color-contrast: var(--ion-color-prueba-contrast);
+	--ion-color-contrast-rgb: var(--ion-color-prueba-contrast-rgb);
+	--ion-color-shade: var(--ion-color-prueba-shade);
+	--ion-color-tint: var(--ion-color-prueba-tint);
+}
