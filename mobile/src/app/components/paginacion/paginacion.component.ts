@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter , Onchanges} from '@angular/core';
+import { Component, Input, Output, EventEmitter , OnChanges} from '@angular/core';
 
 @Component({
   selector: 'app-paginacion',
@@ -6,9 +6,9 @@ import { Component, Input, Output, EventEmitter , Onchanges} from '@angular/core
   styleUrls: ['./paginacion.component.scss'],
   standalone: false,
 })
-export class PaginacionComponent  implements Onchanges {
+export class PaginacionComponent  implements OnChanges {
   @Input() total: number = 0;
-  @Input() porPagina: number = 10;
+  @Input() porPagina: number = 3;
   @Input() paginaActual: number = 1;
   @Input() maxPaginasVisibles: number = 5;
 
