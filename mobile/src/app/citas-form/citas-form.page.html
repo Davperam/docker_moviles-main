@@ -1,13 +1,105 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>citas-form</ion-title>
+    <ion-buttons slot="start">
+      <ion-button fill="solid" (click)="cerrarModal()">
+        Cancelar
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nueva cita</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">citas-form</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <form *ngIf="citaForm" [formGroup]="citaForm" (ngSubmit)="guardarCita()">
+    <ion-list>
+      <!-- Selector de Paciente -->
+      <ion-item>
+        <ion-select label="Paciente" labelPlacement="stacked" formControlName="idpaciente" placeholder="Seleccione un paciente...">
+          <ion-select-option *ngFor="let pac of pacientesList" [value]="pac.idpaciente">
+            {{ pac.nombre }} {{ pac.paterno }} {{ pac.materno }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('idpaciente') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Selector de Dentista -->
+      <ion-item>
+        <ion-select label="Dentista" labelPlacement="stacked" formControlName="iddentista" placeholder="Seleccione un dentista...">
+          <ion-select-option *ngFor="let den of dentistasList" [value]="den.iddentista">
+            Dr(a). {{ den.nombre }} {{ den.paterno }} {{ den.materno }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('iddentista') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Selector de Estado de Cita -->
+      <ion-item>
+        <ion-select label="Estado de Cita" labelPlacement="stacked" formControlName="idestadocita" placeholder="Seleccione el estado...">
+          <ion-select-option *ngFor="let est of estadoCitasList" [value]="est.idestadocita">
+            {{ est.nombre }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('idestadocita') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Fecha -->
+      <ion-item>
+        <ion-input label="Fecha (YYYY-MM-DD)" labelPlacement="stacked" type="text" formControlName="fecha" placeholder="2026-10-25"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('fecha') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Hora de Inicio -->
+      <ion-item>
+        <ion-input label="Hora Inicio (HH:MM:SS)" labelPlacement="stacked" type="text" formControlName="horainicio" placeholder="09:00:00"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('horainicio') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Hora de Fin -->
+      <ion-item>
+        <ion-input label="Hora Fin (HH:MM:SS)" labelPlacement="stacked" type="text" formControlName="horafin" placeholder="09:45:00"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('horafin') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Motivo -->
+      <ion-item>
+        <ion-textarea label="Motivo" labelPlacement="stacked" formControlName="motivo" autoGrow="true" placeholder="Motivo de la consulta..."></ion-textarea>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('motivo') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Selector de Servicio a Realizar -->
+      <ion-item>
+        <ion-select label="Servicio a realizar" labelPlacement="stacked" formControlName="idservicio" placeholder="Seleccione un servicio...">
+          <ion-select-option *ngFor="let serv of serviciosList" [value]="serv.idservicio">
+            {{ serv.nombre }} - ${{ serv.precio }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('idservicio') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Observaciones -->
+      <ion-item>
+        <ion-textarea label="Observaciones" labelPlacement="stacked" formControlName="observaciones" autoGrow="true" placeholder="Notas adicionales..."></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando">
+      {{ guardando ? 'Guardando...' : 'Guardar Cita y Servicio' }}
+    </ion-button>
+  </form>
 </ion-content>

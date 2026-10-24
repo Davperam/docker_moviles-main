@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { DocumentosclinicosListPageRoutingModule } from './documentosclinicos-list-routing.module';
 
 import { DocumentosclinicosListPage } from './documentosclinicos-list.page';
+import { DocumentosclinicosFormPageModule } from '../documentosclinicos-form/documentosclinicos-form.module';
 
 @NgModule({
   imports: [

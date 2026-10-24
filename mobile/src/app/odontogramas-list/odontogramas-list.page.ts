@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
+import { ModalController } from '@ionic/angular';
+import { OdontogramasFormPage } from '../odontogramas-form/odontogramas-form.page';
 
 interface Odontograma {
   idodontograma: number;
@@ -22,7 +24,9 @@ export class OdontogramasListPage implements OnInit {
 
   odontogramas: Odontograma[] = [];
 
-  constructor() { }
+  constructor(
+    private modalController: ModalController
+  ) { }
 
   ngOnInit() {
     this.cargarOdontogramas();
@@ -38,5 +42,21 @@ export class OdontogramasListPage implements OnInit {
       console.error('Error al cargar los odontogramas:', error);
     }
   } 
+
+  async nuevoOdontograma(): Promise<void> {
+  const modal = await this.modalController.create({
+    component: OdontogramasFormPage,
+    breakpoints: [0, 0.5, 0.95],
+    initialBreakpoint: 0.95
+  });
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+
+  if (data?.guardado) {
+    await this.cargarOdontogramas();
+  }
+}
 
 }

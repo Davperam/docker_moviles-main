@@ -14,6 +14,18 @@
       <ion-button slot="end" color="warning" [routerLink]="['/dentistas-view', dentista.iddentista]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
+
+      <ion-button fill="solid" color="warning" (click)="editarDentista(dentista.iddentista)" aria-label="Editar dentista">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+
     </ion-item>
   </ion-list>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button (click)="nuevoDentista()" aria-label="Nuevo dentista">
+        <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+</ion-fab>
+
 </ion-content>

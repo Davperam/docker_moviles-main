@@ -1,13 +1,77 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>pagos-form</ion-title>
+    <ion-buttons slot="start">
+      <ion-button fill="solid" (click)="cerrarModal()">
+        Cancelar
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nuevo pago</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">pagos-form</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <form *ngIf="pagoForm" [formGroup]="pagoForm" (ngSubmit)="guardarPago()">
+    <ion-list>
+      <!-- Cita -->
+      <ion-item>
+        <ion-select label="Cita asociada" labelPlacement="stacked" formControlName="idcita" placeholder="Seleccione una cita">
+          <ion-select-option *ngFor="let c of citasList" [value]="c.idcita || c.id">
+            Cita #{{ c.idcita || c.id }} - Fecha: {{ c.fecha }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('idcita') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Método de Pago -->
+      <ion-item>
+        <ion-select label="Método de pago" labelPlacement="stacked" formControlName="idmetodopago" placeholder="Seleccione el método">
+          <ion-select-option *ngFor="let m of metodoPagosList" [value]="m.idmetodopago || m.id">
+            {{ m.nombre || m.descripcion }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('idmetodopago') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Total -->
+      <ion-item>
+        <ion-input label="Total ($)" labelPlacement="stacked" type="number" formControlName="total" min="0" placeholder="0.00"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('total') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Fecha de Pago -->
+      <ion-item>
+        <ion-input label="Fecha de pago" labelPlacement="stacked" type="date" formControlName="fechapago"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('fechapago') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Estado (Select con las opciones correctas) -->
+      <ion-item>
+        <ion-select label="Estado" labelPlacement="stacked" formControlName="estado" placeholder="Seleccione el estado">
+          <ion-select-option value="pendiente">Pendiente</ion-select-option>
+          <ion-select-option value="pagado">Pagado</ion-select-option>
+          <ion-select-option value="cancelado">Cancelado</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('estado') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Observaciones -->
+      <ion-item>
+        <ion-textarea label="Observaciones" labelPlacement="stacked" formControlName="observaciones" autoGrow="true" placeholder="Notas adicionales del pago..."></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando">
+      {{ guardando ? 'Guardando...' : 'Guardar Pago' }}
+    </ion-button>
+  </form>
 </ion-content>

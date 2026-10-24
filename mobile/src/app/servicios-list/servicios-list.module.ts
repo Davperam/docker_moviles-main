@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { ServiciosListPageRoutingModule } from './servicios-list-routing.module';
 
 import { ServiciosListPage } from './servicios-list.page';
+import { ServiciosFormPageModule } from '../servicios-form/servicios-form.module';
 
 @NgModule({
   imports: [

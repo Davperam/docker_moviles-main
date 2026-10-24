@@ -197,7 +197,11 @@ const routes: Routes = [
   {
     path: 'servicios-form',
     loadChildren: () => import('./servicios-form/servicios-form.module').then( m => m.ServiciosFormPageModule)
+  },  {
+    path: 'expedienteclinico-form',
+    loadChildren: () => import('./expedienteclinico-form/expedienteclinico-form.module').then( m => m.ExpedienteclinicoFormPageModule)
   },
+
 ];
 @NgModule({
   imports: [

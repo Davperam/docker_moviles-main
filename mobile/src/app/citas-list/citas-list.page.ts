@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
+import { ModalController } from '@ionic/angular';
+import { CitasFormPage } from '../citas-form/citas-form.page';
 
 interface Cita {
   idcita: number;
@@ -24,7 +26,9 @@ export class CitasListPage implements OnInit {
 
   citas: Cita[] = [];
 
-  constructor() { }
+  constructor(
+    private modalController: ModalController
+  ) { }
 
   ngOnInit() {
     this.cargarCita();
@@ -40,5 +44,41 @@ export class CitasListPage implements OnInit {
       console.error('Error al cargar las citas:', error);
     }
   }
+
+  async nuevaCita(): Promise<void> {
+  const modal = await this.modalController.create({
+    component: CitasFormPage,
+    breakpoints: [0, 0.5, 0.95],
+    initialBreakpoint: 0.95
+  });
+
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+
+  if (data?.guardado) {
+    await this.cargarCita();
+  }
+}
+
+async editarCita(id: number): Promise<void> {
+  const modal = await this.modalController.create({
+    component: CitasFormPage,
+    componentProps: {
+      id: id
+    },
+    breakpoints: [0, 0.5, 0.95],
+    initialBreakpoint: 0.95
+  });
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+
+  if (data?.guardado) {
+    await this.cargarCita();
+  }
+}
 
 }

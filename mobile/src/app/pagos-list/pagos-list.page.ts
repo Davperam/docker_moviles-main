@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 
+import { ModalController } from '@ionic/angular';
+import { PagosFormPage } from '../pagos-form/pagos-form.page';
+
 interface Pago {
   idpago: number;
   idcita: number;
@@ -22,7 +25,9 @@ export class PagosListPage implements OnInit {
 
   pagos: Pago[] = [];
 
-  constructor() { }
+  constructor(
+    private modalController: ModalController
+  ) { }
 
   ngOnInit() {
     this.cargarPagos();
@@ -38,5 +43,21 @@ export class PagosListPage implements OnInit {
       console.error('Error al cargar los pagos:', error);
     }
   }
+
+  async nuevoPago(): Promise<void> {
+  const modal = await this.modalController.create({
+    component: PagosFormPage,
+    breakpoints: [0, 0.5, 0.95],
+    initialBreakpoint: 0.95
+  });
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+
+  if (data?.guardado) {
+    await this.cargarPagos();
+  }
+}
 
 }

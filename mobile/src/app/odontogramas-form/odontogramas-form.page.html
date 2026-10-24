@@ -1,13 +1,60 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>odontogramas-form</ion-title>
+    <ion-buttons slot="start">
+      <ion-button fill="solid" (click)="cerrarModal()">
+        Cancelar
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nuevo odontograma</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">odontogramas-form</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <form *ngIf="odontogramasForm" [formGroup]="odontogramasForm" (ngSubmit)="guardarOdontogramas()">
+    <ion-list>
+      <!-- Diente -->
+      <ion-item>
+        <ion-input label="Diente" labelPlacement="stacked" type="text" formControlName="diente" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('diente') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Observaciones -->
+      <ion-item>
+        <ion-textarea label="Observaciones" labelPlacement="stacked" formControlName="observaciones" autoGrow="true" maxlength="150"></ion-textarea>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('observaciones') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Tratamiento -->
+      <ion-item>
+        <ion-input label="Tratamiento" labelPlacement="stacked" type="text" formControlName="tratamiento" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('tratamiento') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Estado -->
+      <ion-item>
+        <ion-input label="Estado" labelPlacement="stacked" type="text" formControlName="estado" maxlength="150"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('estado') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Id Expediente -->
+      <ion-item>
+        <ion-input label="Id Expediente" labelPlacement="stacked" type="number" formControlName="idexpediente" min="0"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('idexpediente') as error">
+        {{ error }}
+      </ion-note>
+    </ion-list>
+
+    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando">
+      {{ guardando ? 'Guardando...' : 'Guardar' }}
+    </ion-button>
+  </form>
 </ion-content>

@@ -9,7 +9,7 @@ interface PacienteCrear {
   paterno: string;
   materno: string;
   nacimiento: string;
-  tiposangre: string;
+  tiposangre: number; // <-- Cambiado a number porque ahora es una llave foránea (ID)
   telefono: string;
   correo: string;
   direccion: string;
@@ -28,20 +28,29 @@ export class PacientesFormPage implements OnInit {
   pacienteForm!: FormGroup;
   guardando: boolean = false;
 
+  // Lista opcional para poblar el selector en el HTML
+  tiposSangreList = [
+    { id: 1, nombre: 'O+' },
+    { id: 2, nombre: 'A+' },
+    { id: 3, nombre: 'B+' },
+    { id: 4, nombre: 'AB+' },
+    { id: 5, nombre: 'O-' },
+    { id: 6, nombre: 'A-' },
+    { id: 7, nombre: 'B-' },
+    { id: 8, nombre: 'AB-' }
+  ];
+
   mensajesValidacion: Record<string, Record<string, string>> = {
-    nombre: {
-      required: 'El nombre es obligatorio.',
-      maxlength: 'El nombre no debe superar 150 caracteres.'
-    },
-    precio: {
-      required: 'El precio es obligatorio.',
-      min: 'El precio debe ser igual o mayor que cero.'
-    },
-    stock: {
-      required: 'El stock es obligatorio.',
-      min: 'El stock debe ser igual o mayor que cero.',
-      pattern: 'El stock debe contener únicamente números enteros.'
-    }
+    nombre: { required: 'El nombre es obligatorio.' },
+    paterno: { required: 'El apellido paterno es obligatorio.' },
+    materno: { required: 'El apellido materno es obligatorio.' },
+    nacimiento: { required: 'La fecha de nacimiento es obligatoria.' },
+    tiposangre: { required: 'El tipo de sangre es obligatorio.' },
+    telefono: { required: 'El teléfono es obligatorio.' },
+    correo: { required: 'El correo es obligatorio.' },
+    direccion: { required: 'La dirección es obligatoria.' },
+    registro: { required: 'La fecha de registro es obligatoria.' },
+    activo: { required: 'El campo activo es obligatorio.' }
   };
 
   constructor(
@@ -56,65 +65,30 @@ export class PacientesFormPage implements OnInit {
 
   private crearFormulario(): void {
     this.pacienteForm = this.formBuilder.group({
-      nombre: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      paterno: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      materno: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      nacimiento: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      tiposangre: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      telefono: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      correo: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      direccion: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      registro: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      activo: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
+      nombre: ['', [Validators.required, Validators.maxLength(150)]],
+      paterno: ['', [Validators.required, Validators.maxLength(150)]],
+      materno: ['', [Validators.required, Validators.maxLength(150)]],
+      nacimiento: ['', [Validators.required]],
+      tiposangre: ['', [Validators.required]], // Recibirá el ID numérico
+      telefono: ['', [Validators.required, Validators.maxLength(150)]],
+      correo: ['', [Validators.required, Validators.maxLength(150)]],
+      direccion: ['', [Validators.required]],
+      registro: ['', [Validators.required]],
+      activo: [1, [Validators.required]], // Por defecto activo (1)
     });
   }
+
   getError(controlName: string): string {
     const control = this.pacienteForm.get(controlName);
-
     if (!control || !control.errors || !(control.touched || control.dirty)) {
       return '';
     }
-
     const tipoError = Object.keys(control.errors)[0];
-
-    return this.mensajesValidacion[controlName]?.[tipoError]
-      ?? 'El valor ingresado no es válido.';
+    return this.mensajesValidacion[controlName]?.[tipoError] ?? 'El valor ingresado no es válido.';
   }
 
   async cerrarModal(): Promise<void> {
-    await this.modalController.dismiss({
-      guardado: false
-    });
+    await this.modalController.dismiss({ guardado: false });
   }
 
   async guardarPaciente(): Promise<void> {
@@ -124,20 +98,19 @@ export class PacientesFormPage implements OnInit {
     }
 
     this.guardando = true;
-
     const valores = this.pacienteForm.value;
 
     const paciente: PacienteCrear = {
-      nombre: valores.nombre.trim(),
-      paterno: valores.paterno.trim(),
-      materno: valores.materno.trim(),
-      nacimiento: valores.nacimiento(),
-      tiposangre: valores.tiposangre(),
-      direccion: valores.direccion(),
-      telefono: valores.telefono(),
-      correo: valores.correo(),
-      registro: valores.registro(),
-      activo: valores.activo()
+      nombre: valores.nombre?.trim() ?? '',
+      paterno: valores.paterno?.trim() ?? '',
+      materno: valores.materno?.trim() ?? '',
+      nacimiento: valores.nacimiento?.trim() ?? '',
+      tiposangre: Number(valores.tiposangre) || 1, // <-- Se asegura de mandar el ID como número
+      direccion: valores.direccion?.trim() ?? '',
+      telefono: valores.telefono?.trim() ?? '',
+      correo: valores.correo?.trim() ?? '',
+      registro: valores.registro?.trim() ?? '',
+      activo: Number(valores.activo) || 1
     };
 
     try {
@@ -145,9 +118,7 @@ export class PacientesFormPage implements OnInit {
         `${environment.apiUrl}/items/paciente`,
         paciente,
         {
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Content-Type': 'application/json' }
         }
       );
 
@@ -160,15 +131,13 @@ export class PacientesFormPage implements OnInit {
       await alerta.present();
       await alerta.onDidDismiss();
 
-      await this.modalController.dismiss({
-        guardado: true
-      });
-    } catch (error) {
-      console.error('Error al guardar el paciente:', error);
+      await this.modalController.dismiss({ guardado: true });
+    } catch (error: any) {
+      console.error('Error al guardar el paciente:', error.response?.data || error);
 
       const alerta = await this.alertController.create({
         header: 'Error',
-        message: 'No fue posible guardar el paciente. Revisa los datos, la conexión y los permisos de creación en Directus.',
+        message: 'No fue posible guardar el paciente. Revisa los datos en la consola.',
         buttons: ['Aceptar']
       });
 

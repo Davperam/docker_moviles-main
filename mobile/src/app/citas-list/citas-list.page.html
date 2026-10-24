@@ -14,6 +14,16 @@
       <ion-button slot="end" color="warning" [routerLink]="['/citas-veiw', cita.idcita]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
+      <ion-button fill="solid" color="warning" (click)="editarCita(cita.idcita)" aria-label="Editar cita">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
     </ion-item>
   </ion-list>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button (click)="nuevaCita()" aria-label="Nueva cita">
+        <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+</ion-fab>
+
 </ion-content>

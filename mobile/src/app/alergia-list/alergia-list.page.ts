@@ -3,6 +3,9 @@ import { AlertController } from '@ionic/angular';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 
+import { ModalController } from '@ionic/angular';
+import { AlergiaFormPage } from '../alergia-form/alergia-form.page';
+
 interface Alergia {
   idalergia: number;
   nombre: string;
@@ -23,7 +26,10 @@ export class AlergiaListPage {
 
   titulo: string = 'Alergias';
 
-  constructor(private alertController: AlertController) { }
+  constructor(
+    private alertController: AlertController,
+    private modalController: ModalController
+  ) { }
 
   alergias: Alergia[] = [];
 
@@ -94,6 +100,22 @@ async cambiarPagina(
 ): Promise<void> {
   this.paginaActual = pagina;
   await this.cargarAlergia();
+}
+
+async nuevaAlergia(): Promise<void> {
+  const modal = await this.modalController.create({
+    component: AlergiaFormPage,
+    breakpoints: [0, 0.5, 0.95],
+    initialBreakpoint: 0.95
+  });
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+
+  if (data?.guardado) {
+    await this.cargarDatos();
+  }
 }
 
 }

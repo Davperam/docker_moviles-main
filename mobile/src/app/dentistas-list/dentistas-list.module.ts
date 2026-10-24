@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { DentistasListPageRoutingModule } from './dentistas-list-routing.module';
 
 import { DentistasListPage } from './dentistas-list.page';
+import { DentistasFormPageModule } from '../dentistas-form/dentistas-form.module';
 
 @NgModule({
   imports: [

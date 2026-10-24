@@ -1,4 +1,13 @@
-<app-toolbar nombre="Alergias"></app-toolbar>
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Alergias</ion-title>
+    <ion-buttons slot="end">
+  <ion-button fill="solid" (click)="nuevaAlergia()" aria-label="Nueva alergia">
+    <ion-icon slot="icon-only" name="add"></ion-icon>
+  </ion-button>
+</ion-buttons>
+  </ion-toolbar>
+</ion-header>
 
 <ion-content>
   <ion-list>

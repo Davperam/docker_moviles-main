@@ -15,10 +15,12 @@
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
     </ion-item>
-    <ion-fab slot="fixed" vertical="bottom" horizontal="center">
-      <ion-fab-button (click)="nuevoPaciente()">
-          <ion-icon name="add"></ion-icon>
-      </ion-fab-button>
-    </ion-fab>
   </ion-list>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button (click)="nuevoPaciente()" aria-label="Nuevo paciente">
+        <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+</ion-fab>
+
 </ion-content>

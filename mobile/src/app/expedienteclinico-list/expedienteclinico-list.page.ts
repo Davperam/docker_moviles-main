@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 
+import { ModalController } from '@ionic/angular';
+import { ExpedienteclinicoFormPage } from '../expedienteclinico-form/expedienteclinico-form.page';
+
 interface ExpedienteClinico {
   idexpediente: number;
   idpaciente: number;
@@ -20,7 +23,9 @@ export class ExpedienteclinicoListPage implements OnInit {
 
   expedientes: ExpedienteClinico[] = [];
 
-  constructor() { }
+  constructor(
+    private modalController: ModalController
+  ) { }
 
   ngOnInit() {
     this.cargarExpedientes();
@@ -36,5 +41,22 @@ export class ExpedienteclinicoListPage implements OnInit {
       console.error('Error al cargar los expedientes clínicos:', error);
     }
   }
+
+
+  async nuevoExpedienteclinico(): Promise<void> {
+  const modal = await this.modalController.create({
+    component: ExpedienteclinicoFormPage,
+    breakpoints: [0, 0.5, 0.95],
+    initialBreakpoint: 0.95
+  });
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+
+  if (data?.guardado) {
+    await this.cargarExpedientes();
+  }
+}
 
 }
