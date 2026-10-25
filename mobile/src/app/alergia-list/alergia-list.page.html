@@ -1,11 +1,6 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>Alergias</ion-title>
-    <ion-buttons slot="end">
-  <ion-button fill="solid" (click)="nuevaAlergia()" aria-label="Nueva alergia">
-    <ion-icon slot="icon-only" name="add"></ion-icon>
-  </ion-button>
-</ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -15,10 +10,27 @@
       <ion-label class="ion-text-wrap">
         <h2>{{ alergia.nombre }}</h2>
       </ion-label>
-      <ion-button slot="end" color="warning" [routerLink]="['/alergia-view', alergia.idalergia]">
+      <ion-button slot="end" color="primary" [routerLink]="['/alergia-view', alergia.idalergia]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
+<!-- Boton de editar -->
+      <ion-button fill="solid" color="warning" (click)="editarAlergia(alergia.idalergia)" aria-label="Editar alergia">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+
+      <ion-button fill="solid" color="danger" (click)="confirmarEliminar(alergia.idalergia, alergia.nombre)" aria-label="Eliminar alergia">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+
     </ion-item>
   </ion-list>
+  <!-- Boton de agregar producto -->
   <app-paginacion [total]="total" [porPagina]="porPagina" [paginaActual]="paginaActual" [maxPaginasVisibles]="5" (paginaCambio)="cambiarPagina($event)"></app-paginacion>
+
+      <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+        <ion-fab-button [routerLink]="['/alergia-form']" aria-label="Nueva alergia">
+          <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+  
 </ion-content>

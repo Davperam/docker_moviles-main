@@ -11,9 +11,18 @@
         <h2>{{ documento.nombredocumento }}</h2>
         <p>{{ documento.fechacarga }}</p>
       </ion-label>
-      <ion-button slot="end" color="warning" [routerLink]="['/documentosclinicos-view', documento.iddocumento]">
+      <ion-button slot="end" color="primary" [routerLink]="['/documentosclinicos-view', documento.iddocumento]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
+
+      <ion-button fill="solid" color="warning" (click)="editarDocumento(documento.iddocumento)" aria-label="Editar documento clínico">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+
+      <ion-button fill="solid" color="danger" (click)="confirmarEliminar(documento.iddocumento, documento.nombredocumento)" aria-label="Eliminar documento clínico">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+
     </ion-item>
   </ion-list>
 

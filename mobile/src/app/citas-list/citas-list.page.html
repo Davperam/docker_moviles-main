@@ -11,12 +11,19 @@
         <h2>{{ cita.motivo }}</h2>
         <p>{{ cita.fecha }} - {{ cita.horainicio }} to {{ cita.horafin }}</p>
       </ion-label>
-      <ion-button slot="end" color="warning" [routerLink]="['/citas-veiw', cita.idcita]">
+<!-- Boton de ver detalle -->      
+      <ion-button slot="end" color="primary" [routerLink]="['/citas-view', cita.idcita]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
+<!-- Boton de editar -->
       <ion-button fill="solid" color="warning" (click)="editarCita(cita.idcita)" aria-label="Editar cita">
         <ion-icon slot="icon-only" name="pencil"></ion-icon>
       </ion-button>
+<!-- Boton de eliminar -->
+      <ion-button fill="solid" color="danger" (click)="confirmarEliminar(cita.idcita, cita.motivo)" aria-label="Eliminar cita">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+
     </ion-item>
   </ion-list>
 

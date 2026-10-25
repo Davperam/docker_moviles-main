@@ -11,9 +11,19 @@
         <h2>{{ odontograma.idexpediente }}</h2>
         <p>{{ odontograma.fecharegistro }}</p>
       </ion-label>
-      <ion-button slot="end" color="warning" [routerLink]="['/odontogramas-view', odontograma.idodontograma]">
+      <ion-button slot="end" color="primary" [routerLink]="['/odontogramas-view', odontograma.idodontograma]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
+
+      <ion-button fill="solid" color="warning" (click)="editarOdontograma(odontograma.idodontograma)" aria-label="Editar odontograma">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+
+      <!-- Boton de eliminar corregido -->
+      <ion-button fill="solid" color="danger" (click)="confirmarEliminar(odontograma.idodontograma, 'Diente ' + odontograma.diente)" aria-label="Eliminar odontograma">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+
     </ion-item>
   </ion-list>
 

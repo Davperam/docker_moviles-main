@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
-import { ModalController } from '@ionic/angular';
+import { ModalController, AlertController } from '@ionic/angular';
 import { OdontogramasFormPage } from '../odontogramas-form/odontogramas-form.page';
 
 interface Odontograma {
@@ -25,7 +25,8 @@ export class OdontogramasListPage implements OnInit {
   odontogramas: Odontograma[] = [];
 
   constructor(
-    private modalController: ModalController
+    private modalController: ModalController,
+    private alertController: AlertController
   ) { }
 
   ngOnInit() {
@@ -58,5 +59,79 @@ export class OdontogramasListPage implements OnInit {
     await this.cargarOdontogramas();
   }
 }
+
+/* Editar odontograma */
+
+async editarOdontograma(id: number): Promise<void> {
+  const modal = await this.modalController.create({
+    component: OdontogramasFormPage,
+    componentProps: {
+      id: id
+    },
+    breakpoints: [0, 0.5, 0.95],
+    initialBreakpoint: 0.95
+  });
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+
+  if (data?.guardado) {
+    await this.cargarOdontogramas();
+  }
+}
+
+/* Eliminar odontograma */
+
+async confirmarEliminar(id: number, nombre: string): Promise<void> {
+  const alerta = await this.alertController.create({
+    header: 'Eliminar odontograma',
+    message: `¿Estás seguro de eliminar el odontograma "${nombre}"?`,
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel'
+      },
+      {
+        text: 'Eliminar',
+        role: 'destructive',
+        handler: () => {
+          void this.eliminarOdontograma(id);
+        }
+      }
+    ]
+  });
+
+  await alerta.present();
+}
+async eliminarOdontograma(id: number): Promise<void> {
+  try {
+    await axios.delete(
+      `${environment.apiUrl}/items/odontograma/${id}`
+    );
+
+    const alerta = await this.alertController.create({
+      header: 'Odontograma eliminado',
+      message: 'El odontograma fue eliminado correctamente.',
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
+    await alerta.onDidDismiss();
+
+    await this.cargarOdontogramas();
+  } catch (error) {
+    console.error('Error al eliminar el odontograma:', error);
+
+    const alerta = await this.alertController.create({
+      header: 'Error',
+      message: 'No fue posible eliminar el odontograma. Revisa la conexión, los permisos de eliminación en Directus y las relaciones del registro.',
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
+  }
+}
+
 
 }

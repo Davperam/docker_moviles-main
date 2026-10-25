@@ -1,11 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 
-interface DocumentoCrear {
-  iddocumento: number;
+interface DocumentoGuardar {
+  idexpediente: number;
+  nombredocumento: string;
+  rutaarchivo: string;
+  tipodocumento: string;
+  activo: number;
+}
+
+interface DocumentoDetalle {
+  iddocumento?: number;
+  id?: number;
   idexpediente: number;
   nombredocumento: string;
   rutaarchivo: string;
@@ -21,10 +30,12 @@ interface DocumentoCrear {
 })
 export class DocumentosclinicosFormPage implements OnInit {
 
+  @Input() id?: number; // Recibe el ID si estamos editando
+
   documentoForm!: FormGroup;
+  cargando: boolean = false;
   guardando: boolean = false;
   
-  // Arreglo para almacenar los expedientes que vienen de Directus
   expedientesList: any[] = [];
 
   mensajesValidacion: Record<string, Record<string, string>> = {
@@ -53,9 +64,17 @@ export class DocumentosclinicosFormPage implements OnInit {
     private modalController: ModalController
   ) { }
 
-  ngOnInit() {
+  get esEdicion(): boolean {
+    return this.id !== undefined;
+  }
+
+  async ngOnInit(): Promise<void> {
     this.crearFormulario();
-    this.cargarExpedientes(); // <-- Cargamos la lista de expedientes al iniciar
+    await this.cargarExpedientes();
+
+    if (this.esEdicion) {
+      await this.cargarDocumento();
+    }
   }
 
   private crearFormulario(): void {
@@ -68,13 +87,47 @@ export class DocumentosclinicosFormPage implements OnInit {
     });
   }
 
-  // Método para obtener los expedientes desde Directus
   async cargarExpedientes(): Promise<void> {
     try {
       const response = await axios.get(`${environment.apiUrl}/items/expedienteclinico`);
       this.expedientesList = response.data.data;
     } catch (error) {
       console.error('Error al cargar la lista de expedientes:', error);
+    }
+  }
+
+  private async cargarDocumento(): Promise<void> {
+    if (this.id === undefined) {
+      return;
+    }
+
+    this.cargando = true;
+
+    try {
+      const response = await axios.get<{ data: DocumentoDetalle }>(
+        `${environment.apiUrl}/items/documentoclinico/${this.id}`
+      );
+      const doc = response.data.data;
+
+      this.documentoForm.patchValue({
+        idexpediente: doc.idexpediente,
+        nombredocumento: doc.nombredocumento,
+        rutaarchivo: doc.rutaarchivo,
+        tipodocumento: doc.tipodocumento,
+        activo: doc.activo
+      });
+    } catch (error) {
+      console.error('Error al cargar el documento clínico:', error);
+
+      const alerta = await this.alertController.create({
+        header: 'Error',
+        message: 'No fue posible cargar los datos del documento. Revisa la conexión y los permisos de lectura en Directus.',
+        buttons: ['Aceptar']
+      });
+
+      await alerta.present();
+    } finally {
+      this.cargando = false;
     }
   }
 
@@ -100,7 +153,7 @@ export class DocumentosclinicosFormPage implements OnInit {
     this.guardando = true;
     const valores = this.documentoForm.value;
 
-    const documento: Partial<DocumentoCrear> = {
+    const documento: DocumentoGuardar = {
       idexpediente: Number(valores.idexpediente) || 0,
       nombredocumento: valores.nombredocumento?.trim() ?? '',
       rutaarchivo: valores.rutaarchivo?.trim() ?? '',
@@ -109,15 +162,23 @@ export class DocumentosclinicosFormPage implements OnInit {
     };
 
     try {
-      await axios.post(
-        `${environment.apiUrl}/items/documentoclinico`,
-        documento,
-        { headers: { 'Content-Type': 'application/json' } }
-      );
+      if (this.esEdicion && this.id !== undefined) {
+        await axios.patch(
+          `${environment.apiUrl}/items/documentoclinico/${this.id}`,
+          documento,
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+      } else {
+        await axios.post(
+          `${environment.apiUrl}/items/documentoclinico`,
+          documento,
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+      }
 
       const alerta = await this.alertController.create({
-        header: 'Documento guardado',
-        message: 'El documento clínico fue registrado correctamente.',
+        header: this.esEdicion ? 'Documento actualizado' : 'Documento guardado',
+        message: this.esEdicion ? 'El documento clínico fue actualizado correctamente.' : 'El documento clínico fue registrado correctamente.',
         buttons: ['Aceptar']
       });
 
@@ -130,7 +191,7 @@ export class DocumentosclinicosFormPage implements OnInit {
 
       const alerta = await this.alertController.create({
         header: 'Error',
-        message: 'No fue posible guardar el documento clínico. Revisa los datos en la consola.',
+        message: this.esEdicion ? 'No fue posible actualizar el documento.' : 'No fue posible guardar el documento clínico.',
         buttons: ['Aceptar']
       });
 

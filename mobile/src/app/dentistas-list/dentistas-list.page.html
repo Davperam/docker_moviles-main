@@ -11,12 +11,16 @@
         <h2>{{ dentista.nombre }} {{ dentista.paterno }}</h2>
         <p> Cedula: {{ dentista.cedula }}</p>
       </ion-label>
-      <ion-button slot="end" color="warning" [routerLink]="['/dentistas-view', dentista.iddentista]">
+      <ion-button slot="end" color="primary" [routerLink]="['/dentistas-view', dentista.iddentista]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
 
       <ion-button fill="solid" color="warning" (click)="editarDentista(dentista.iddentista)" aria-label="Editar dentista">
         <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+
+      <ion-button fill="solid" color="danger" (click)="confirmarEliminar(dentista.iddentista, dentista.nombre)" aria-label="Eliminar dentista">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
       </ion-button>
 
     </ion-item>

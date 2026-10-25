@@ -5,12 +5,19 @@
         Cancelar
       </ion-button>
     </ion-buttons>
-    <ion-title>Nueva alergia</ion-title>
+    <ion-title>
+      {{ esEdicion ? 'Editar alergia' : 'Nueva alergia' }}
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form *ngIf="alergiaForm"[formGroup]="alergiaForm" (ngSubmit)="guardarAlergia()">
+  <div *ngIf="cargando" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando alergia...</p>
+  </div>
+
+  <form *ngIf="alergiaForm && !cargando" [formGroup]="alergiaForm" (ngSubmit)="guardarAlergia()">
     <ion-list>
       <ion-item>
         <ion-input label="Nombre" labelPlacement="stacked" type="text" formControlName="nombre" maxlength="150"></ion-input>
@@ -27,8 +34,8 @@
       </ion-note>
     </ion-list>
 
-    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando">
-      {{ guardando ? 'Guardando...' : 'Guardar' }}
+    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando || cargando">
+      {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar Alergia' : 'Guardar Alergia') }}
     </ion-button>
   </form>
 </ion-content>

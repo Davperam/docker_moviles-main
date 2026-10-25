@@ -1,13 +1,23 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 
-interface OdontogramaCrear {
+interface OdontogramaGuardar {
   idexpediente: number;
   observaciones: string;
-  diente: string;
+  diente: number; // <-- Cambiado a number
+  estado: string;
+  tratamiento: string;
+}
+
+interface OdontogramaDetalle {
+  idodontograma?: number;
+  id?: number;
+  idexpediente: number;
+  observaciones: string;
+  diente: number; // <-- Cambiado a number
   estado: string;
   tratamiento: string;
 }
@@ -20,7 +30,10 @@ interface OdontogramaCrear {
 })
 export class OdontogramasFormPage implements OnInit {
 
+  @Input() id?: number;
+
   odontogramasForm!: FormGroup;
+  cargando: boolean = false;
   guardando: boolean = false;
 
   mensajesValidacion: Record<string, Record<string, string>> = {
@@ -30,7 +43,8 @@ export class OdontogramasFormPage implements OnInit {
     },
     diente: {
       required: 'El diente es obligatorio.',
-      maxlength: 'El diente no debe superar 150 caracteres.'
+      min: 'El número de diente debe ser mayor o igual a cero.',
+      pattern: 'El diente debe contener únicamente números enteros.'
     },
     estado: {
       required: 'El estado es obligatorio.',
@@ -53,8 +67,16 @@ export class OdontogramasFormPage implements OnInit {
     private modalController: ModalController
   ) { }
 
-  ngOnInit(): void {
+  get esEdicion(): boolean {
+    return this.id !== undefined;
+  }
+
+  async ngOnInit(): Promise<void> {
     this.crearFormulario();
+
+    if (this.esEdicion) {
+      await this.cargarOdontograma();
+    }
   }
 
   private crearFormulario(): void {
@@ -65,7 +87,8 @@ export class OdontogramasFormPage implements OnInit {
       ]],
       diente: ['', [
         Validators.required,
-        Validators.maxLength(150)
+        Validators.min(0),
+        Validators.pattern('^[0-9]+$')
       ]],
       tratamiento: ['', [
         Validators.required,
@@ -81,6 +104,41 @@ export class OdontogramasFormPage implements OnInit {
         Validators.pattern('^[0-9]+$')
       ]]
     });
+  }
+
+  private async cargarOdontograma(): Promise<void> {
+    if (this.id === undefined) {
+      return;
+    }
+
+    this.cargando = true;
+
+    try {
+      const response = await axios.get<{ data: OdontogramaDetalle }>(
+        `${environment.apiUrl}/items/odontograma/${this.id}`
+      );
+      const o = response.data.data;
+
+      this.odontogramasForm.patchValue({
+        idexpediente: o.idexpediente,
+        observaciones: o.observaciones,
+        diente: o.diente,
+        estado: o.estado,
+        tratamiento: o.tratamiento
+      });
+    } catch (error) {
+      console.error('Error al cargar el odontograma:', error);
+
+      const alerta = await this.alertController.create({
+        header: 'Error',
+        message: 'No fue posible cargar los datos del odontograma. Revisa la conexión y los permisos de lectura en Directus.',
+        buttons: ['Aceptar']
+      });
+
+      await alerta.present();
+    } finally {
+      this.cargando = false;
+    }
   }
 
   getError(controlName: string): string {
@@ -112,28 +170,40 @@ export class OdontogramasFormPage implements OnInit {
 
     const valores = this.odontogramasForm.value;
 
-    const odontograma: OdontogramaCrear = {
-      observaciones: valores.observaciones?.trim() ?? '',
-      estado: valores.estado?.trim() ?? '',
-      diente: valores.diente?.trim() ?? '',
-      tratamiento: valores.tratamiento?.trim() ?? '',
+    const odontograma: OdontogramaGuardar = {
+      observaciones: valores.observaciones ? String(valores.observaciones).trim() : '',
+      estado: valores.estado ? String(valores.estado).trim() : '',
+      diente: Number(valores.diente) || 0, // <-- Convertido correctamente a número
+      tratamiento: valores.tratamiento ? String(valores.tratamiento).trim() : '',
       idexpediente: Number(valores.idexpediente) || 0
     };
 
     try {
-      await axios.post(
-        `${environment.apiUrl}/items/odontograma`,
-        odontograma,
-        {
-          headers: {
-            'Content-Type': 'application/json'
+      if (this.esEdicion && this.id !== undefined) {
+        await axios.patch(
+          `${environment.apiUrl}/items/odontograma/${this.id}`,
+          odontograma,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
           }
-        }
-      );
+        );
+      } else {
+        await axios.post(
+          `${environment.apiUrl}/items/odontograma`,
+          odontograma,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+      }
 
       const alerta = await this.alertController.create({
-        header: 'Odontograma guardado',
-        message: 'El odontograma fue registrado correctamente.',
+        header: this.esEdicion ? 'Odontograma actualizado' : 'Odontograma guardado',
+        message: this.esEdicion ? 'El odontograma fue actualizado correctamente.' : 'El odontograma fue registrado correctamente.',
         buttons: ['Aceptar']
       });
 
@@ -148,7 +218,7 @@ export class OdontogramasFormPage implements OnInit {
 
       const alerta = await this.alertController.create({
         header: 'Error',
-        message: 'No fue posible guardar el odontograma. Revisa los datos, la conexión y los permisos de creación en Directus.',
+        message: this.esEdicion ? 'No fue posible actualizar el odontograma.' : 'No fue posible guardar el odontograma. Revisa los datos, la conexión y los permisos de creación en Directus.',
         buttons: ['Aceptar']
       });
 

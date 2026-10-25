@@ -118,4 +118,75 @@ async nuevaAlergia(): Promise<void> {
   }
 }
 
+/* Editar alergias */
+async editarAlergia(id: number): Promise<void> {
+  const modal = await this.modalController.create({
+    component: AlergiaFormPage,
+    componentProps: {
+      id: id
+    },
+    breakpoints: [0, 0.5, 0.95],
+    initialBreakpoint: 0.95
+  });
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+
+  if (data?.guardado) {
+    await this.cargarAlergia();
+  }
+}
+
+/* Eliminar alergias */
+async confirmarEliminar(id: number, nombre: string): Promise<void> {
+  const alerta = await this.alertController.create({
+    header: 'Eliminar alergia',
+    message: `¿Estás seguro de eliminar la alergia "${nombre}"?`,
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel'
+      },
+      {
+        text: 'Eliminar',
+        role: 'destructive',
+        handler: () => {
+          void this.eliminarAlergia(id);
+        }
+      }
+    ]
+  });
+
+  await alerta.present();
+}
+async eliminarAlergia(id: number): Promise<void> {
+  try {
+    await axios.delete(
+      `${environment.apiUrl}/items/alergia/${id}`
+    );
+
+    const alerta = await this.alertController.create({
+      header: 'Alergia eliminada',
+      message: 'La alergia fue eliminada correctamente.',
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
+    await alerta.onDidDismiss();
+
+    await this.cargarAlergia();
+  } catch (error) {
+    console.error('Error al eliminar la alergia:', error);
+
+    const alerta = await this.alertController.create({
+      header: 'Error',
+      message: 'No fue posible eliminar la alergia. Revisa la conexión, los permisos de eliminación en Directus y las relaciones del registro.',
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
+  }
+}
+
 }

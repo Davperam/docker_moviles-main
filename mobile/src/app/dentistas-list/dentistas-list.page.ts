@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 
-import { ModalController } from '@ionic/angular';
+import { ModalController, AlertController } from '@ionic/angular';
 import { DentistasFormPage } from '../dentistas-form/dentistas-form.page';
 
 interface Dentista {
@@ -27,7 +27,8 @@ export class DentistasListPage implements OnInit {
   dentistas: Dentista[] = [];
 
   constructor(
-     private modalController: ModalController
+     private modalController: ModalController,
+     private alertController: AlertController
   ) { }
 
   ngOnInit() {
@@ -77,6 +78,56 @@ export class DentistasListPage implements OnInit {
 
   if (data?.guardado) {
     await this.cargarDentistas();
+  }
+}
+
+async confirmarEliminar(id: number, nombre: string): Promise<void> {
+  const alerta = await this.alertController.create({
+    header: 'Eliminar dentista',
+    message: `¿Estás seguro de eliminar el dentista "${nombre}"?`,
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel'
+      },
+      {
+        text: 'Eliminar',
+        role: 'destructive',
+        handler: () => {
+          void this.eliminarDentista(id);
+        }
+      }
+    ]
+  });
+
+  await alerta.present();
+}
+async eliminarDentista(id: number): Promise<void> {
+  try {
+    await axios.delete(
+      `${environment.apiUrl}/items/dentista/${id}`
+    );
+
+    const alerta = await this.alertController.create({
+      header: 'Dentista eliminado',
+      message: 'El dentista fue eliminado correctamente.',
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
+    await alerta.onDidDismiss();
+
+    await this.cargarDentistas();
+  } catch (error) {
+    console.error('Error al eliminar el dentista:', error);
+
+    const alerta = await this.alertController.create({
+      header: 'Error',
+      message: 'No fue posible eliminar el dentista. Revisa la conexión, los permisos de eliminación en Directus y las relaciones del registro.',
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
   }
 }
 

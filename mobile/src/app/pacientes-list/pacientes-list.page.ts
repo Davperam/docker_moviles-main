@@ -62,4 +62,24 @@ export class PacientesListPage implements OnInit {
       await this.cargarPacientes();
     }
   }
+
+  async editarPaciente(id: number): Promise<void> {
+  const modal = await this.modalController.create({
+    component: PacientesFormPage,
+    componentProps: {
+      id: id
+    },
+    breakpoints: [0, 0.5, 0.95],
+    initialBreakpoint: 0.95
+  });
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+
+  if (data?.guardado) {
+    await this.cargarPacientes();
+  }
+}
+
 }

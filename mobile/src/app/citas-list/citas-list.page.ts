@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
-import { ModalController } from '@ionic/angular';
+import { ModalController, AlertController } from '@ionic/angular';
 import { CitasFormPage } from '../citas-form/citas-form.page';
 
 interface Cita {
@@ -27,7 +27,8 @@ export class CitasListPage implements OnInit {
   citas: Cita[] = [];
 
   constructor(
-    private modalController: ModalController
+    private modalController: ModalController,
+    private alertController: AlertController
   ) { }
 
   ngOnInit() {
@@ -78,6 +79,79 @@ async editarCita(id: number): Promise<void> {
 
   if (data?.guardado) {
     await this.cargarCita();
+  }
+}
+
+/* Eliminar cita */
+async confirmarEliminar(id: number, nombre: string): Promise<void> {
+  const alerta = await this.alertController.create({
+    header: 'Eliminar cita',
+    message: `¿Estás seguro de eliminar la cita "${nombre}"?`,
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel'
+      },
+      {
+        text: 'Eliminar',
+        role: 'destructive',
+        handler: () => {
+          void this.eliminarCita(id);
+        }
+      }
+    ]
+  });
+
+  await alerta.present();
+}
+async eliminarCita(id: number): Promise<void> {
+  try {
+    // 1. Primero buscamos y eliminamos los registros dependientes en `citadetalle`
+    try {
+      const responseDetalle = await axios.get(
+        `${environment.apiUrl}/items/citadetalle?filter[idcita][_eq]=${id}`
+      );
+      const detalles = responseDetalle.data.data;
+
+      if (detalles && detalles.length > 0) {
+        for (const detalle of detalles) {
+          // Usamos el nombre real de la llave primaria de tu diagrama: iddetallecita
+          const idDetalle = detalle.iddetallecita || detalle.iddetalle || detalle.id;
+          
+          if (idDetalle) {
+            await axios.delete(`${environment.apiUrl}/items/citadetalle/${idDetalle}`);
+          }
+        }
+      }
+    } catch (errDetalle) {
+      console.warn('No se encontraron detalles previos o ya fueron eliminados:', errDetalle);
+    }
+
+    // 2. Ahora procedemos a eliminar la cita principal
+    await axios.delete(
+      `${environment.apiUrl}/items/cita/${id}`
+    );
+
+    const alerta = await this.alertController.create({
+      header: 'Cita eliminada',
+      message: 'La cita fue eliminada correctamente.',
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
+    await alerta.onDidDismiss();
+
+    await this.cargarCita();
+  } catch (error) {
+    console.error('Error al eliminar la cita:', error);
+
+    const alerta = await this.alertController.create({
+      header: 'Error',
+      message: 'No fue posible eliminar la cita. Revisa la conexión, los permisos de eliminación en Directus y las relaciones del registro.',
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
   }
 }
 

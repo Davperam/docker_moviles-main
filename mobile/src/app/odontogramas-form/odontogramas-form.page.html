@@ -5,16 +5,23 @@
         Cancelar
       </ion-button>
     </ion-buttons>
-    <ion-title>Nuevo odontograma</ion-title>
+    <ion-title>
+      {{ esEdicion ? 'Editar odontograma' : 'Nuevo odontograma' }}
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form *ngIf="odontogramasForm" [formGroup]="odontogramasForm" (ngSubmit)="guardarOdontogramas()">
+  <div *ngIf="cargando" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando odontograma...</p>
+  </div>
+
+  <form *ngIf="odontogramasForm && !cargando" [formGroup]="odontogramasForm" (ngSubmit)="guardarOdontogramas()">
     <ion-list>
       <!-- Diente -->
       <ion-item>
-        <ion-input label="Diente" labelPlacement="stacked" type="text" formControlName="diente" maxlength="150"></ion-input>
+        <ion-input label="Diente" labelPlacement="stacked" type="number" formControlName="diente" min="0"></ion-input>
       </ion-item>
       <ion-note color="danger" *ngIf="getError('diente') as error">
         {{ error }}
@@ -53,8 +60,8 @@
       </ion-note>
     </ion-list>
 
-    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando">
-      {{ guardando ? 'Guardando...' : 'Guardar' }}
+    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando || cargando">
+      {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar Odontograma' : 'Guardar Odontograma') }}
     </ion-button>
   </form>
 </ion-content>

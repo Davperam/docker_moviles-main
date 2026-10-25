@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 
-interface CitaCrear {
+interface CitaGuardar {
   idpaciente: number;
   iddentista: number;
   idestadocita: number;
@@ -15,11 +15,24 @@ interface CitaCrear {
   observaciones: string;
 }
 
-interface CitaDetalleCrear {
+interface CitaDetalleGuardar {
   idcita: number;
   idservicio: number;
   cantidad: number;
   precio: number;
+  observaciones: string;
+}
+
+interface CitaDetalle {
+  idcita?: number;
+  id?: number;
+  idpaciente: number;
+  iddentista: number;
+  idestadocita: number;
+  fecha: string;
+  horainicio: string;
+  horafin: string;
+  motivo: string;
   observaciones: string;
 }
 
@@ -31,19 +44,22 @@ interface CitaDetalleCrear {
 })
 export class CitasFormPage implements OnInit {
 
+  @Input() id?: number; // <-- Recibe el ID de la cita cuando se presiona editar
+
   citaForm!: FormGroup;
+  cargando: boolean = false;
   guardando: boolean = false;
 
   pacientesList: any[] = [];
   dentistasList: any[] = [];
   estadoCitasList: any[] = [];
-  serviciosList: any[] = []; // <-- Lista para los servicios
+  serviciosList: any[] = [];
 
   mensajesValidacion: Record<string, Record<string, string>> = {
     idpaciente: { required: 'El paciente es obligatorio.' },
     iddentista: { required: 'El dentista es obligatorio.' },
     idestadocita: { required: 'El estado de la cita es obligatorio.' },
-    idservicio: { required: 'El servicio a realizar es obligatorio.' }, // <-- Mensaje de validación
+    idservicio: { required: 'El servicio a realizar es obligatorio.' },
     fecha: { required: 'La fecha es obligatoria.' },
     horainicio: { required: 'La hora de inicio es obligatoria.' },
     horafin: { required: 'La hora de fin es obligatoria.' },
@@ -56,9 +72,17 @@ export class CitasFormPage implements OnInit {
     private modalController: ModalController
   ) { }
 
-  ngOnInit() {
+  get esEdicion(): boolean {
+    return this.id !== undefined;
+  }
+
+  async ngOnInit(): Promise<void> {
     this.crearFormulario();
-    this.cargarCatalogos();
+    await this.cargarCatalogos();
+
+    if (this.esEdicion) {
+      await this.cargarCitaUnica();
+    }
   }
 
   private crearFormulario(): void {
@@ -66,7 +90,7 @@ export class CitasFormPage implements OnInit {
       idpaciente: ['', [Validators.required]],
       iddentista: ['', [Validators.required]],
       idestadocita: ['', [Validators.required]],
-      idservicio: ['', [Validators.required]], // <-- Campo agregado al formulario
+      idservicio: ['', [Validators.required]],
       fecha: ['', [Validators.required]],
       horainicio: ['', [Validators.required]],
       horafin: ['', [Validators.required]],
@@ -81,7 +105,7 @@ export class CitasFormPage implements OnInit {
         axios.get(`${environment.apiUrl}/items/paciente`),
         axios.get(`${environment.apiUrl}/items/dentista`),
         axios.get(`${environment.apiUrl}/items/estadocita`),
-        axios.get(`${environment.apiUrl}/items/servicio`) // <-- Cargamos también los servicios
+        axios.get(`${environment.apiUrl}/items/servicio`)
       ]);
 
       this.pacientesList = resPacientes.data.data;
@@ -90,6 +114,61 @@ export class CitasFormPage implements OnInit {
       this.serviciosList = resServicios.data.data;
     } catch (error) {
       console.error('Error al cargar los catálogos:', error);
+    }
+  }
+
+  private async cargarCitaUnica(): Promise<void> {
+    if (this.id === undefined) {
+      return;
+    }
+
+    this.cargando = true;
+
+    try {
+      // 1. Cargamos los datos de la cita principal
+      const response = await axios.get<{ data: CitaDetalle }>(
+        `${environment.apiUrl}/items/cita/${this.id}`
+      );
+      const cita = response.data.data;
+
+      // 2. Buscamos si tiene un servicio asociado en citadetalle para seleccionarlo en el formulario
+      let servicioId = '';
+      try {
+        const resDetalle = await axios.get(
+          `${environment.apiUrl}/items/citadetalle?filter[idcita][_eq]=${this.id}`
+        );
+        const detalles = resDetalle.data.data;
+        if (detalles && detalles.length > 0) {
+          servicioId = detalles[0].idservicio;
+        }
+      } catch (e) {
+        console.warn('No se pudo cargar el detalle de la cita:', e);
+      }
+
+      // 3. Rellenamos el formulario con patchValue
+      this.citaForm.patchValue({
+        idpaciente: cita.idpaciente,
+        iddentista: cita.iddentista,
+        idestadocita: cita.idestadocita,
+        idservicio: servicioId,
+        fecha: cita.fecha,
+        horainicio: cita.horainicio,
+        horafin: cita.horafin,
+        motivo: cita.motivo,
+        observaciones: cita.observaciones
+      });
+    } catch (error) {
+      console.error('Error al cargar la cita:', error);
+
+      const alerta = await this.alertController.create({
+        header: 'Error',
+        message: 'No fue posible cargar los datos de la cita.',
+        buttons: ['Aceptar']
+      });
+
+      await alerta.present();
+    } finally {
+      this.cargando = false;
     }
   }
 
@@ -115,11 +194,10 @@ export class CitasFormPage implements OnInit {
     this.guardando = true;
     const valores = this.citaForm.value;
 
-    // Buscamos el precio del servicio seleccionado para guardarlo en el detalle
     const servicioSeleccionado = this.serviciosList.find(s => s.idservicio === Number(valores.idservicio));
     const precioServicio = servicioSeleccionado ? Number(servicioSeleccionado.precio) : 0;
 
-    const citaData: CitaCrear = {
+    const citaData: CitaGuardar = {
       idpaciente: Number(valores.idpaciente),
       iddentista: Number(valores.iddentista),
       idestadocita: Number(valores.idestadocita),
@@ -131,37 +209,75 @@ export class CitasFormPage implements OnInit {
     };
 
     try {
-      // 1. Guardar la cita principal en Directus
-      const responseCita = await axios.post(
-        `${environment.apiUrl}/items/cita`,
-        citaData,
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-
-      // Obtenemos el ID de la cita recién creada
-      const citaCreada = responseCita.data.data;
-      const idCitaGenerada = citaCreada.idcita || citaCreada.id;
-
-      // 2. Si se generó la cita y hay un servicio seleccionado, guardamos el detalle automáticamente
-      if (idCitaGenerada && valores.idservicio) {
-        const detalleData: CitaDetalleCrear = {
-          idcita: Number(idCitaGenerada),
-          idservicio: Number(valores.idservicio),
-          cantidad: 1,
-          precio: precioServicio,
-          observaciones: valores.observaciones?.trim() ?? ''
-        };
-
-        await axios.post(
-          `${environment.apiUrl}/items/citadetalle`,
-          detalleData,
+      if (this.esEdicion && this.id !== undefined) {
+        // ACTUALIZAR CITA EXISTENTE (PATCH)
+        await axios.patch(
+          `${environment.apiUrl}/items/cita/${this.id}`,
+          citaData,
           { headers: { 'Content-Type': 'application/json' } }
         );
+
+        // Actualizar o gestionar el detalle del servicio
+        if (valores.idservicio) {
+          const resDetalle = await axios.get(
+            `${environment.apiUrl}/items/citadetalle?filter[idcita][_eq]=${this.id}`
+          );
+          const detalles = resDetalle.data.data;
+
+          const detalleData: CitaDetalleGuardar = {
+            idcita: Number(this.id),
+            idservicio: Number(valores.idservicio),
+            cantidad: 1,
+            precio: precioServicio,
+            observaciones: valores.observaciones?.trim() ?? ''
+          };
+
+          if (detalles && detalles.length > 0) {
+            const idDetalle = detalles[0].iddetallecita || detalles[0].id;
+            await axios.patch(
+              `${environment.apiUrl}/items/citadetalle/${idDetalle}`,
+              detalleData,
+              { headers: { 'Content-Type': 'application/json' } }
+            );
+          } else {
+            await axios.post(
+              `${environment.apiUrl}/items/citadetalle`,
+              detalleData,
+              { headers: { 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+      } else {
+        // CREAR NUEVA CITA (POST)
+        const responseCita = await axios.post(
+          `${environment.apiUrl}/items/cita`,
+          citaData,
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+
+        const citaCreada = responseCita.data.data;
+        const idCitaGenerada = citaCreada.idcita || citaCreada.id;
+
+        if (idCitaGenerada && valores.idservicio) {
+          const detalleData: CitaDetalleGuardar = {
+            idcita: Number(idCitaGenerada),
+            idservicio: Number(valores.idservicio),
+            cantidad: 1,
+            precio: precioServicio,
+            observaciones: valores.observaciones?.trim() ?? ''
+          };
+
+          await axios.post(
+            `${environment.apiUrl}/items/citadetalle`,
+            detalleData,
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+        }
       }
 
       const alerta = await this.alertController.create({
-        header: 'Cita guardada',
-        message: 'La cita y su servicio fueron registrados correctamente.',
+        header: this.esEdicion ? 'Cita actualizada' : 'Cita guardada',
+        message: this.esEdicion ? 'La cita fue actualizada correctamente.' : 'La cita y su servicio fueron registrados correctamente.',
         buttons: ['Aceptar']
       });
 

@@ -10,9 +10,25 @@
       <ion-label class="ion-text-wrap">
         <h2>{{ medicamento.nombre }}</h2>
       </ion-label>
-      <ion-button slot="end" color="warning" [routerLink]="['/medicamentos-view', medicamento.idmedicamento]">
+      <ion-button slot="end" color="primary" [routerLink]="['/medicamentos-view', medicamento.idmedicamento]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
+<!-- Editar medicamento -->
+      <ion-button fill="solid" color="warning" (click)="editarMedicamento(medicamento.idmedicamento)" aria-label="Editar medicamento">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+<!-- Eliminar medicamento -->
+      <ion-button fill="solid" color="danger" (click)="confirmarEliminar(medicamento.idmedicamento, medicamento.nombre)" aria-label="Eliminar medicamento">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+      
     </ion-item>
   </ion-list>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+      <ion-fab-button (click)="nuevoMedicamento()" aria-label="Nuevo medicamento">
+          <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+  </ion-fab>
+
 </ion-content>
