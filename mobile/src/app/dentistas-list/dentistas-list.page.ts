@@ -23,6 +23,7 @@ interface Dentista {
   standalone: false,
 })
 export class DentistasListPage implements OnInit {
+  titulo: string = 'Dentistas';
 
   dentistas: Dentista[] = [];
 

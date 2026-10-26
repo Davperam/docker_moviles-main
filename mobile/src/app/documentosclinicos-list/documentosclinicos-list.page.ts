@@ -21,6 +21,7 @@ interface DocumentoClinico {
   standalone: false,
 })
 export class DocumentosclinicosListPage implements OnInit {
+  titulo: string = 'Documentos clínicos';
 
   documentos: DocumentoClinico[] = [];
 

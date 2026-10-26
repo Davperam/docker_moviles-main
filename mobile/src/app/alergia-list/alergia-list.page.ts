@@ -20,11 +20,14 @@ interface Alergia {
   standalone: false,
 })
 export class AlergiaListPage {
-  total: number = 0;
-  paginaActual: number = 1;
-  porPagina: number = 3;
 
   titulo: string = 'Alergias';
+  
+  total: number = 0;
+  paginaActual: number = 1;
+  porPagina: number = 10;
+
+  
 
   constructor(
     private alertController: AlertController,
@@ -34,7 +37,7 @@ export class AlergiaListPage {
   alergias: Alergia[] = [];
 
   ionViewWillEnter(): void {
-    void this.cargarAlergia();
+    void this.cargarDatos();
   }
 
   async cargarAlergia(): Promise<void> {

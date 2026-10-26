@@ -1,8 +1,5 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Alergias</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-toolbar [nombre]="titulo" color="prueba">
+</app-toolbar>
 
 <ion-content>
   <ion-list>
@@ -10,15 +7,15 @@
       <ion-label class="ion-text-wrap">
         <h2>{{ alergia.nombre }}</h2>
       </ion-label>
-      <ion-button slot="end" color="primary" [routerLink]="['/alergia-view', alergia.idalergia]">
+      <ion-button class="boton-producto" slot="end" color="primary" [routerLink]="['/alergia-view', alergia.idalergia]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
 <!-- Boton de editar -->
-      <ion-button fill="solid" color="warning" (click)="editarAlergia(alergia.idalergia)" aria-label="Editar alergia">
+      <ion-button class="boton-producto" fill="solid" color="warning" (click)="editarAlergia(alergia.idalergia)" aria-label="Editar alergia">
         <ion-icon slot="icon-only" name="pencil"></ion-icon>
       </ion-button>
 
-      <ion-button fill="solid" color="danger" (click)="confirmarEliminar(alergia.idalergia, alergia.nombre)" aria-label="Eliminar alergia">
+      <ion-button class="boton-producto" fill="solid" color="danger" (click)="confirmarEliminar(alergia.idalergia, alergia.nombre)" aria-label="Eliminar alergia">
         <ion-icon slot="icon-only" name="trash"></ion-icon>
       </ion-button>
 

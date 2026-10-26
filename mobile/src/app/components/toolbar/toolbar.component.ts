@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-toolbar',
@@ -6,13 +6,9 @@ import { Component, Input, OnInit } from '@angular/core';
   styleUrls: ['./toolbar.component.scss'],
   standalone: false,
 })
-export class ToolbarComponent  implements OnInit {
+export class ToolbarComponent {
 
-  @Input() nombre: string = 'Dentistas';
+  @Input() nombre: string = '';
   @Input() color: string = 'prueba';
-
-  constructor() { }
-
-  ngOnInit() {}
-
+  
 }

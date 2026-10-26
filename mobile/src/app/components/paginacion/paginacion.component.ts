@@ -8,7 +8,7 @@ import { Component, Input, Output, EventEmitter , OnChanges} from '@angular/core
 })
 export class PaginacionComponent  implements OnChanges {
   @Input() total: number = 0;
-  @Input() porPagina: number = 3;
+  @Input() porPagina: number = 10;
   @Input() paginaActual: number = 1;
   @Input() maxPaginasVisibles: number = 5;
 

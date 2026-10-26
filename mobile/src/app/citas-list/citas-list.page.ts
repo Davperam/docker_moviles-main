@@ -24,6 +24,8 @@ interface Cita {
 })
 export class CitasListPage implements OnInit {
 
+  titulo: string = 'Citas';
+
   citas: Cita[] = [];
 
   constructor(

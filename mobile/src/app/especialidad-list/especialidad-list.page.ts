@@ -16,6 +16,7 @@ interface Especialidad {
   standalone: false,
 })
 export class EspecialidadListPage implements OnInit {
+  titulo: string = 'Especialidades Dentistas';
 
   especialidades: Especialidad[] = [];
 
