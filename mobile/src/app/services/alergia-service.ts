@@ -13,7 +13,6 @@ export interface Alergia {
 export interface AlergiaGuardar {
   nombre: string;
   descripcion: string;
-  activo: number;
 }
 
 @Injectable({ providedIn: 'root' })

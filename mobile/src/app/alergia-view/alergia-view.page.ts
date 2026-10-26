@@ -8,7 +8,7 @@ import { AlergiasService } from '../services/alergia-service';
 import { environment } from '../../environments/environment';
 
 interface Alergia {
-  id: number;
+  idalergia: number;
   nombre: string;
   descripcion: string;
   activo: number;
@@ -67,7 +67,7 @@ export class AlergiaViewPage implements OnInit {
       return;
     }
 
-    const url = `${environment.apiUrl}/items/alergia/${this.alergia.id}`;
+    const url = `${environment.apiUrl}/items/alergia/${this.alergia.idalergia}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
