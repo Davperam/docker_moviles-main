@@ -1,11 +1,7 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/alergia-list"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Descripción de la alergia</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-view-toolbar 
+  [nombre]="'Descripcion: ' + alergia?.nombre" 
+  defaultHref="/alergia-list">
+</app-view-toolbar>
 
 <ion-content>
   <ion-text color="danger" *ngIf="mensajeError">

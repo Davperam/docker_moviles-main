@@ -1,7 +1,9 @@
-<app-toolbar [nombre]="titulo" color="prueba">
+<app-toolbar [nombre]="titulo" >
 </app-toolbar>
 
 <ion-content>
+  <ion-searchbar [value]="busqueda" [debounce]="300" (ionInput)="handleInput($event)" placeholder="Buscar productos" aria-label="Buscar productos"></ion-searchbar>
+  <p class="ion-padding" *ngIf="total === 0">No se encontraron productos.</p>
   <ion-list>
     <ion-item *ngFor="let alergia of alergias">
       <ion-label class="ion-text-wrap">

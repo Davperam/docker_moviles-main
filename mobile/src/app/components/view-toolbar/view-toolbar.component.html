@@ -1,0 +1,14 @@
+<ion-header [translucent]="true">
+  <ion-toolbar [color]="color">
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="defaultHref" ></ion-back-button>
+
+      
+    </ion-buttons>
+
+    <ion-title>{{ nombre }}</ion-title>
+
+    <!-- ng-content por si la página necesita agregar botones a la derecha -->
+    <ng-content></ng-content>
+  </ion-toolbar>
+</ion-header>

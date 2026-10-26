@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { AlertController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
 
 import { ModalController } from '@ionic/angular';
 import { AlergiaFormPage } from '../alergia-form/alergia-form.page';
+import { AlergiasService } from '../services/alergia-service';
 
 interface Alergia {
   idalergia: number;
@@ -20,18 +20,18 @@ interface Alergia {
   standalone: false,
 })
 export class AlergiaListPage {
-
-  titulo: string = 'Alergias';
+  busqueda: string = '';
   
   total: number = 0;
   paginaActual: number = 1;
   porPagina: number = 10;
 
-  
+  titulo: string = 'Alergias';
 
   constructor(
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private alergiaService: AlergiasService
   ) { }
 
   alergias: Alergia[] = [];
@@ -40,69 +40,13 @@ export class AlergiaListPage {
     void this.cargarDatos();
   }
 
-  async cargarAlergia(): Promise<void> {
+async cargarAlergia(): Promise<void> {
     try {
-      const response = await axios.get<{ data: Alergia[] }>(
-        `${environment.apiUrl}/items/alergia`,
-        {
-          params: {
-            limit: this.porPagina,
-            page: this.paginaActual,
-            sort: 'idalergia'
-          }
-        }
-      );
-
-      this.alergias = response.data.data;
+      this.alergias = await firstValueFrom(this.alergiaService.listado(this.paginaActual, this.porPagina, this.busqueda));
 
     } catch (error) {
       console.error('Error al cargar las alergias:', error);
     }
-  }
-
-  async cargarTotal(): Promise<void> {
-  try {
-    const response = await axios.get<{ data: { count: number | string }[] }>(
-      `${environment.apiUrl}/items/alergia?aggregate[count]=*`
-    );
-
-    this.total = Number(
-      response.data.data[0]?.count ?? 0
-    );
-
-  } catch (error) {
-    console.error(
-      'Error al obtener el total de alergias:',
-      error
-    );
-
-    this.total = 0;
-  }
-}
-private ajustarPaginaActual(): void {
-  const totalPaginas = Math.ceil(
-    this.total / this.porPagina
-  );
-
-  if (totalPaginas === 0) {
-    this.paginaActual = 1;
-    return;
-  }
-
-  if (this.paginaActual > totalPaginas) {
-    this.paginaActual = totalPaginas;
-  }
-}
-async cargarDatos(): Promise<void> {
-  await this.cargarTotal();
-  this.ajustarPaginaActual();
-  await this.cargarAlergia();
-}
-async cambiarPagina(
-  pagina: number
-): Promise<void> {
-  this.paginaActual = pagina;
-  await this.cargarAlergia();
 }
 
 async nuevaAlergia(): Promise<void> {
@@ -165,9 +109,7 @@ async confirmarEliminar(id: number, nombre: string): Promise<void> {
 }
 async eliminarAlergia(id: number): Promise<void> {
   try {
-    await axios.delete(
-      `${environment.apiUrl}/items/alergia/${id}`
-    );
+    await firstValueFrom(this.alergiaService.eliminar(id));
 
     const alerta = await this.alertController.create({
       header: 'Alergia eliminada',
@@ -191,5 +133,55 @@ async eliminarAlergia(id: number): Promise<void> {
     await alerta.present();
   }
 }
+
+ /* paginacion */
+async cargarTotal(): Promise<void> {
+  try { this.total = await firstValueFrom(this.alergiaService.total(this.busqueda));
+  } catch (error) {
+      console.error(
+        'Error al obtener el total de alergias:', error ); this.total = 0; }
+}
+private ajustarPaginaActual(): void {
+  const totalPaginas = Math.ceil(
+    this.total / this.porPagina
+  );
+
+  if (totalPaginas === 0) {
+    this.paginaActual = 1;
+    return;
+  }
+
+  if (this.paginaActual > totalPaginas) {
+    this.paginaActual = totalPaginas;
+  }
+}
+async cargarDatos(): Promise<void> {
+  await this.cargarTotal();
+  this.ajustarPaginaActual();
+  await this.cargarAlergia();
+}
+async cambiarPagina(
+  pagina: number
+): Promise<void> {
+  this.paginaActual = pagina;
+  await this.cargarAlergia();
+}
+  private parametrosBusqueda(): Record<string, string> {
+    const texto = this.busqueda.trim();
+    return texto ? {
+      filter: JSON.stringify({
+        _or: [
+          { nombre: { _icontains: texto } },
+          { descripcion: { _icontains: texto } }
+        ]
+      })
+    } : {};
+  }
+
+  async handleInput(event: CustomEvent<{ value?: string | null }>): Promise<void> {
+    this.busqueda = event.detail.value ?? '';
+    this.paginaActual = 1;
+    await this.cargarDatos();
+  }
 
 }

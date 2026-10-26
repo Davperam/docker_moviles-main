@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import axios from 'axios';
+
+import { firstValueFrom } from 'rxjs';
+import { AlergiasService } from '../services/alergia-service';
 import { environment } from '../../environments/environment';
 
 interface Alergia {
@@ -24,6 +27,7 @@ export class AlergiaViewPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private alergiaService: AlergiasService,
     private loading: LoadingController
   ) { }
 
@@ -49,17 +53,22 @@ export class AlergiaViewPage implements OnInit {
     await loading.present();
 
     try {
-      const response = await axios.get<{ data: Alergia }>(
-          `${environment.apiUrl}/items/alergia/${encodeURIComponent(id)}`
-      );
-
-      this.alergia = response.data.data;
+      this.alergia = await firstValueFrom(this.alergiaService.detalle(Number(id)));
     } catch (error) {
-      console.error('Error al cargar la descripción de la alergia:', error);
-      this.mensajeError = 'No se pudo cargar la descripción de la alergia. Revisa el ID, la conexión y los permisos de lectura.';
+      console.error('Error al cargar la alergia:', error);
+      this.mensajeError = 'No se pudo cargar la alergia. Revisa el ID, la conexión y los permisos de lectura.';
     } finally {
       await loading.dismiss();
     }
+  }
+
+  abrirPagina(): void {
+    if (!this.alergia) {
+      return;
+    }
+
+    const url = `${environment.apiUrl}/items/alergia/${this.alergia.id}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
 }

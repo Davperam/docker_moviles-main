@@ -9,6 +9,6 @@ import { Component, Input } from '@angular/core';
 export class ToolbarComponent {
 
   @Input() nombre: string = '';
-  @Input() color: string = 'prueba';
+  @Input() color: string = 'secondary';
   
 }

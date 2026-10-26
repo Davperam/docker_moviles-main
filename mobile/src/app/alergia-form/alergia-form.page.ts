@@ -1,8 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { ActivatedRoute, Router } from '@angular/router';
+
+import { firstValueFrom } from 'rxjs';
+import { AlergiasService } from '../services/alergia-service';
 
 interface AlergiaGuardar {
   nombre: string;
@@ -43,7 +45,8 @@ export class AlergiaFormPage implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private alergiaService: AlergiasService
   ) {}
 
   get esEdicion(): boolean {
@@ -91,11 +94,7 @@ export class AlergiaFormPage implements OnInit {
     this.cargando = true;
 
     try {
-      const response = await axios.get<{ data: AlergiaDetalle }>(
-        `${environment.apiUrl}/items/alergia/${this.id}`
-      );
-
-      const alergia = response.data.data;
+      const alergia = await firstValueFrom(this.alergiaService.detalle(this.id));
 
       this.alergiaForm.patchValue({
         nombre: alergia.nombre,
@@ -139,25 +138,9 @@ export class AlergiaFormPage implements OnInit {
 
     try {
       if (this.esEdicion && this.id !== undefined) {
-        await axios.patch(
-          `${environment.apiUrl}/items/alergia/${this.id}`,
-          alergia,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await firstValueFrom(this.alergiaService.actualizar(this.id, alergia));
       } else {
-        await axios.post(
-          `${environment.apiUrl}/items/alergia`,
-          alergia,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await firstValueFrom(this.alergiaService.crear(alergia));
       }
 
       const alerta = await this.alertController.create({
