@@ -22,7 +22,10 @@ interface Cita {
   styleUrls: ['./citas-list.page.scss'],
   standalone: false,
 })
-export class CitasListPage implements OnInit {
+export class CitasListPage {
+  total: number = 0;
+  paginaActual: number = 1;
+  porPagina: number = 8;
 
   titulo: string = 'Citas';
 
@@ -33,14 +36,21 @@ export class CitasListPage implements OnInit {
     private alertController: AlertController
   ) { }
 
-  ngOnInit() {
-    this.cargarCita();
+  ionViewWillEnter(): void {
+    void this.cargarDatos();
   }
 
   async cargarCita(): Promise<void> {
     try {
       const response = await axios.get<{ data: Cita[] }>(
-        `${environment.apiUrl}/items/cita`
+        `${environment.apiUrl}/items/cita`,
+        {
+        params: {
+          limit: this.porPagina,
+          page: this.paginaActual,
+          sort: 'idcita',
+        }
+      }
       );
       this.citas = response.data.data; 
     } catch (error) {
@@ -155,6 +165,51 @@ async eliminarCita(id: number): Promise<void> {
 
     await alerta.present();
   }
+}
+
+async cargarTotal(): Promise<void> {
+  try {
+    const response = await axios.get<{ data: { count: number | string }[] }>(
+      `${environment.apiUrl}/items/cita?aggregate[count]=*`
+    );
+
+    this.total = Number(
+      response.data.data[0]?.count ?? 0
+    );
+
+  } catch (error) {
+    console.error(
+      'Error al obtener el total de citas:',
+      error
+    );
+
+    this.total = 0;
+  }
+}
+private ajustarPaginaActual(): void {
+  const totalPaginas = Math.ceil(
+    this.total / this.porPagina
+  );
+
+  if (totalPaginas === 0) {
+    this.paginaActual = 1;
+    return;
+  }
+
+  if (this.paginaActual > totalPaginas) {
+    this.paginaActual = totalPaginas;
+  }
+}
+async cargarDatos(): Promise<void> {
+  await this.cargarTotal();
+  this.ajustarPaginaActual();
+  await this.cargarCita();
+}
+async cambiarPagina(
+  pagina: number
+): Promise<void> {
+  this.paginaActual = pagina;
+  await this.cargarCita();
 }
 
 }

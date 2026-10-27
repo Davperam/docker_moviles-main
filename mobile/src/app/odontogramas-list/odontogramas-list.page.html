@@ -1,8 +1,5 @@
-<ion-header>
-  <ion-toolbar color="prueba">
-    <ion-title>Lista de odontogramas</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-toolbar [nombre]="titulo">
+</app-toolbar>
 
 <ion-content>
   <ion-list>
@@ -26,6 +23,10 @@
 
     </ion-item>
   </ion-list>
+
+  <app-paginacion [total]="total" [porPagina]="porPagina" [paginaActual]="paginaActual" [maxPaginasVisibles]="5" (paginaCambio)="cambiarPagina($event)"></app-paginacion>
+
+
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="center">
     <ion-fab-button (click)="nuevoOdontograma()" aria-label="Nuevo odontograma">

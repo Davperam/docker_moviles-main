@@ -3,7 +3,7 @@
 
 <ion-content>
   <ion-searchbar [value]="busqueda" [debounce]="300" (ionInput)="handleInput($event)" placeholder="Buscar productos" aria-label="Buscar productos"></ion-searchbar>
-  <p class="ion-padding" *ngIf="total === 0">No se encontraron productos.</p>
+  <p class="ion-padding" *ngIf="total === 0">No se encontraron alergias.</p>
   <ion-list>
     <ion-item *ngFor="let alergia of alergias">
       <ion-label class="ion-text-wrap">
@@ -23,11 +23,12 @@
 
     </ion-item>
   </ion-list>
-  <!-- Boton de agregar producto -->
+  <!-- Paginación -->
   <app-paginacion [total]="total" [porPagina]="porPagina" [paginaActual]="paginaActual" [maxPaginasVisibles]="5" (paginaCambio)="cambiarPagina($event)"></app-paginacion>
 
+      <!-- Botón de agregar alergia -->
       <ion-fab slot="fixed" vertical="bottom" horizontal="center">
-        <ion-fab-button [routerLink]="['/alergia-form']" aria-label="Nueva alergia">
+        <ion-fab-button (click)="nuevaAlergia()" aria-label="Nueva alergia">
           <ion-icon name="add"></ion-icon>
         </ion-fab-button>
       </ion-fab>

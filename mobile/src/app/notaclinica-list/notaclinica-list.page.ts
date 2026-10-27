@@ -16,13 +16,14 @@ interface NotaClinica {
   styleUrls: ['./notaclinica-list.page.scss'],
   standalone: false,
 })
-export class NotaclinicaListPage implements OnInit {
+export class NotaclinicaListPage {
+  titulo: string = 'Notas clínicas';
 
   notas: NotaClinica[] = [];
 
   constructor() { }
 
-  ngOnInit() {
+ionViewWillEnter(): void {
     this.cargarNotas();
   }
   async cargarNotas(): Promise<void> {

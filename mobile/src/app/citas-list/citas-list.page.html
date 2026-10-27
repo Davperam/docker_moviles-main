@@ -1,4 +1,4 @@
-<app-toolbar [nombre]="titulo" color="prueba">
+<app-toolbar [nombre]="titulo">
 </app-toolbar>
 
 <ion-content>
@@ -23,6 +23,14 @@
 
     </ion-item>
   </ion-list>
+
+  <app-paginacion
+  [total]="total"
+  [porPagina]="porPagina"
+  [paginaActual]="paginaActual"
+  [maxPaginasVisibles]="5"
+  (paginaCambio)="cambiarPagina($event)">
+</app-paginacion>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="center">
     <ion-fab-button (click)="nuevaCita()" aria-label="Nueva cita">
