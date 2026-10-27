@@ -197,13 +197,22 @@ const routes: Routes = [
   {
     path: 'servicios-form',
     loadChildren: () => import('./servicios-form/servicios-form.module').then( m => m.ServiciosFormPageModule)
-  },  {
+  },
+  {
     path: 'expedienteclinico-form',
     loadChildren: () => import('./expedienteclinico-form/expedienteclinico-form.module').then( m => m.ExpedienteclinicoFormPageModule)
   },
   {
     path: 'medicamentos-form',
     loadChildren: () => import('./medicamentos-form/medicamentos-form.module').then( m => m.MedicamentosFormPageModule)
+  },
+  {
+    path: 'registro',
+    loadChildren: () => import('./registro/registro.module').then( m => m.RegistroPageModule)
+  },
+  {
+    path: 'login',
+    loadChildren: () => import('./login/login.module').then( m => m.LoginPageModule)
   },
 
 ];
