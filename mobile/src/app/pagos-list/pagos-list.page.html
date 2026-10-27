@@ -1,14 +1,11 @@
-<ion-header>
-  <ion-toolbar color="prueba">
-    <ion-title>Lista de pagos</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-toolbar [nombre]="titulo" >
+</app-toolbar>
 
 <ion-content>
   <ion-list>
     <ion-item *ngFor="let pago of pagos">
       <ion-label class="ion-text-wrap">
-        <h2>{{ pago.idcita }}</h2>
+        <h2>{{ pago.idcita}}</h2>
         <p>{{ pago.estado }} </p>
       </ion-label>
       <ion-button slot="end" color="warning" [routerLink]="['/pagos-view', pago.idpago]">
@@ -16,6 +13,14 @@
       </ion-button>
     </ion-item>
   </ion-list>
+
+  <app-paginacion
+  [total]="total"
+  [porPagina]="porPagina"
+  [paginaActual]="paginaActual"
+  [maxPaginasVisibles]="5"
+  (paginaCambio)="cambiarPagina($event)">
+</app-paginacion>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="center">
     <ion-fab-button (click)="nuevoPago()" aria-label="Nuevo pago">

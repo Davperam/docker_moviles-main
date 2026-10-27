@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 import { ModalController, AlertController } from '@ionic/angular';
@@ -20,7 +20,13 @@ interface Odontograma {
   styleUrls: ['./odontogramas-list.page.scss'],
   standalone: false,
 })
-export class OdontogramasListPage implements OnInit {
+export class OdontogramasListPage {
+
+  titulo: string = 'Odontogramas';
+
+    total: number = 0;
+    paginaActual: number = 1;
+    porPagina: number = 5;
 
   odontogramas: Odontograma[] = [];
 
@@ -29,14 +35,21 @@ export class OdontogramasListPage implements OnInit {
     private alertController: AlertController
   ) { }
 
-  ngOnInit() {
-    this.cargarOdontogramas();
+  ionViewWillEnter(): void {
+    void this.cargarDatos();
   }
 
   async cargarOdontogramas(): Promise<void> {
     try {
       const response = await axios.get<{ data: Odontograma[] }>(
-        `${environment.apiUrl}/items/odontograma`
+        `${environment.apiUrl}/items/odontograma`,
+         {
+        params: {
+          limit: this.porPagina,
+          page: this.paginaActual,
+          sort: 'idodontograma'
+        }
+      }
       );
       this.odontogramas = response.data.data; 
     } catch (error) {
@@ -133,5 +146,50 @@ async eliminarOdontograma(id: number): Promise<void> {
   }
 }
 
+/* Paginación */
+async cargarTotal(): Promise<void> {
+  try {
+    const response = await axios.get<{ data: { count: number | string }[] }>(
+      `${environment.apiUrl}/items/odontograma?aggregate[count]=*`
+    );
+
+    this.total = Number(
+      response.data.data[0]?.count ?? 0
+    );
+
+  } catch (error) {
+    console.error(
+      'Error al obtener el total de productos:',
+      error
+    );
+
+    this.total = 0;
+  }
+}
+private ajustarPaginaActual(): void {
+  const totalPaginas = Math.ceil(
+    this.total / this.porPagina
+  );
+
+  if (totalPaginas === 0) {
+    this.paginaActual = 1;
+    return;
+  }
+
+  if (this.paginaActual > totalPaginas) {
+    this.paginaActual = totalPaginas;
+  }
+}
+async cargarDatos(): Promise<void> {
+  await this.cargarTotal();
+  this.ajustarPaginaActual();
+  await this.cargarOdontogramas();
+}
+async cambiarPagina(
+  pagina: number
+): Promise<void> {
+  this.paginaActual = pagina;
+  await this.cargarOdontogramas();
+}
 
 }

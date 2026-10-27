@@ -20,7 +20,12 @@ interface DocumentoClinico {
   styleUrls: ['./documentosclinicos-list.page.scss'],
   standalone: false,
 })
-export class DocumentosclinicosListPage implements OnInit {
+export class DocumentosclinicosListPage {
+
+  total: number = 0;
+  paginaActual: number = 1;
+  porPagina: number = 8;
+
   titulo: string = 'Documentos clínicos';
 
   documentos: DocumentoClinico[] = [];
@@ -30,14 +35,21 @@ export class DocumentosclinicosListPage implements OnInit {
     private alertController: AlertController
   ) { }
 
-  ngOnInit() {
-    this.cargarDocumentos();
+   ionViewWillEnter(): void {
+    void this.cargarDatos();
   }
 
   async cargarDocumentos(): Promise<void> {
     try {
       const response = await axios.get<{ data: DocumentoClinico[] }>(
-        `${environment.apiUrl}/items/documentoclinico`
+        `${environment.apiUrl}/items/documentoclinico`,
+         {
+        params: {
+          limit: this.porPagina,
+          page: this.paginaActual,
+          sort: 'iddocumento'
+        }
+      }
       );
       this.documentos = response.data.data; 
     } catch (error) {
@@ -132,4 +144,51 @@ async eliminarDocumento(id: number): Promise<void> {
     await alerta.present();
   }
 }
+
+/* Paginación */
+async cargarTotal(): Promise<void> {
+  try {
+    const response = await axios.get<{ data: { count: number | string }[] }>(
+      `${environment.apiUrl}/items/documentoclinico?aggregate[count]=*`
+    );
+
+    this.total = Number(
+      response.data.data[0]?.count ?? 0
+    );
+
+  } catch (error) {
+    console.error(
+      'Error al obtener el total de documentos:',
+      error
+    );
+
+    this.total = 0;
+  }
+}
+private ajustarPaginaActual(): void {
+  const totalPaginas = Math.ceil(
+    this.total / this.porPagina
+  );
+
+  if (totalPaginas === 0) {
+    this.paginaActual = 1;
+    return;
+  }
+
+  if (this.paginaActual > totalPaginas) {
+    this.paginaActual = totalPaginas;
+  }
+}
+async cargarDatos(): Promise<void> {
+  await this.cargarTotal();
+  this.ajustarPaginaActual();
+  await this.cargarDocumentos();
+}
+async cambiarPagina(
+  pagina: number
+): Promise<void> {
+  this.paginaActual = pagina;
+  await this.cargarDocumentos();
+}
+
 }

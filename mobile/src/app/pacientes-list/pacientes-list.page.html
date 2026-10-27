@@ -1,8 +1,5 @@
-<ion-header>
-  <ion-toolbar color="prueba">
-    <ion-title>Lista de pacientes</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-toolbar [nombre]="titulo">
+</app-toolbar>
 
 <ion-content>
   <ion-list>
@@ -16,6 +13,14 @@
       </ion-button>
     </ion-item>
   </ion-list>
+
+  <app-paginacion
+  [total]="total"
+  [porPagina]="porPagina"
+  [paginaActual]="paginaActual"
+  [maxPaginasVisibles]="5"
+  (paginaCambio)="cambiarPagina($event)">
+</app-paginacion>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="center">
     <ion-fab-button (click)="nuevoPaciente()" aria-label="Nuevo paciente">
