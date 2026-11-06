@@ -2,14 +2,24 @@
 </app-toolbar>
 
 <ion-content>
+  <ion-searchbar [value]="busqueda" [debounce]="300" (ionInput)="handleInput($event)" placeholder="Buscar paciente" aria-label="Buscar paciente"></ion-searchbar>
+<p class="ion-padding" *ngIf="total === 0">No se encontró el paciente.</p>
   <ion-list>
     <ion-item *ngFor="let paciente of pacientes">
       <ion-label class="ion-text-wrap">
         <h2>{{ paciente.nombre }} {{ paciente.paterno }} {{ paciente.materno }}</h2>
         <p>{{ paciente.nacimiento }}</p>
       </ion-label>
-      <ion-button slot="end" color="warning" [routerLink]="['/pacientes-view', paciente.idpaciente]">
+      <ion-button slot="end" color="primary" [routerLink]="['/pacientes-view', paciente.idpaciente]">
         <ion-icon name="eye-outline"></ion-icon>
+      </ion-button>
+      <!-- Boton actualizar -->
+       <ion-button fill="solid" color="warning" (click)="editarPaciente(paciente.idpaciente)" aria-label="Editar producto">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+      <!-- Boton eliminar -->
+       <ion-button fill="solid" color="danger" (click)="confirmarEliminar(paciente.idpaciente, paciente.nombre)" aria-label="Eliminar producto">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
       </ion-button>
     </ion-item>
   </ion-list>

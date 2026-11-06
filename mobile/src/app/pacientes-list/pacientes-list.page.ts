@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
-import { ModalController } from '@ionic/angular';
+import { ModalController, AlertController } from '@ionic/angular';
 import { PacientesFormPage } from '../pacientes-form/pacientes-form.page';
 
 interface Paciente {
@@ -25,6 +25,7 @@ interface Paciente {
   standalone: false,
 })
 export class PacientesListPage {
+  busqueda: string = '';
 
   total: number = 0;
   paginaActual: number = 1;
@@ -35,7 +36,8 @@ export class PacientesListPage {
   pacientes: Paciente[] = [];
 
   constructor(
-    private modalController: ModalController
+    private modalController: ModalController,
+    private alertController: AlertController
   ) { }
 
   ionViewWillEnter(): void {
@@ -51,6 +53,7 @@ export class PacientesListPage {
           limit: this.porPagina,
           page: this.paginaActual,
           sort: 'idpaciente',
+          ...this.parametrosBusqueda()
         }
       }
     );
@@ -94,12 +97,64 @@ export class PacientesListPage {
     await this.cargarPacientes();
   }
 }
+/* Eliminación */
+async confirmarEliminar(id: number, nombre: string): Promise<void> {
+  const alerta = await this.alertController.create({
+    header: 'Eliminar paciente',
+    message: `¿Estás seguro de eliminar el paciente "${nombre}"?`,
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel'
+      },
+      {
+        text: 'Eliminar',
+        role: 'destructive',
+        handler: () => {
+          void this.eliminarPaciente(id);
+        }
+      }
+    ]
+  });
+
+  await alerta.present();
+}
+async eliminarPaciente(id: number): Promise<void> {
+  try {
+    await axios.delete(
+      `${environment.apiUrl}/items/paciente/${id}`
+    );
+
+    const alerta = await this.alertController.create({
+      header: 'Paciente eliminado',
+      message: 'El paciente fue eliminado correctamente.',
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
+    await alerta.onDidDismiss();
+
+    await this.cargarPacientes();
+  } catch (error) {
+    console.error('Error al eliminar el paciente:', error);
+
+    const alerta = await this.alertController.create({
+      header: 'Error',
+      message: 'No fue posible eliminar el paciente. Revisa la conexión, los permisos de eliminación en Directus y las relaciones del registro.',
+      buttons: ['Aceptar']
+    });
+
+    await alerta.present();
+  }
+}
+
 
 /* Paginación */
 async cargarTotal(): Promise<void> {
   try {
     const response = await axios.get<{ data: { count: number | string }[] }>(
-      `${environment.apiUrl}/items/paciente?aggregate[count]=*`
+      `${environment.apiUrl}/items/paciente?aggregate[count]=*`,
+      { params: this.parametrosBusqueda() }
     );
 
     this.total = Number(
@@ -141,5 +196,25 @@ async cambiarPagina(
   await this.cargarPacientes();
 }
 
+/* Busqueda */
+
+  private parametrosBusqueda(): Record<string, string> {
+    const texto = this.busqueda.trim();
+    return texto ? {
+      filter: JSON.stringify({
+        _or: [
+          { nombre: { _icontains: texto } },
+          { paterno: { _icontains: texto } },
+          { materno: { _icontains: texto } },
+        ]
+      })
+    } : {};
+  }
+
+  async handleInput(event: CustomEvent<{ value?: string | null }>): Promise<void> {
+    this.busqueda = event.detail.value ?? '';
+    this.paginaActual = 1;
+    await this.cargarDatos();
+  }
 
 }

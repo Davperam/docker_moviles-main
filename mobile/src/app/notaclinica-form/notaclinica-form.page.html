@@ -1,13 +1,65 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>notaclinica-form</ion-title>
+    <ion-buttons slot="start">
+      <ion-button fill="solid" (click)="cerrarModal()">
+        Cancelar
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      {{ esEdicion ? 'Editar Nota Clínica' : 'Nueva Nota Clínica' }}
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">notaclinica-form</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <!-- Indicador mientras cargan los datos de edición -->
+  <div *ngIf="cargando" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando nota clínica...</p>
+  </div>
+
+  <!-- Formulario que se muestra solo cuando ya cargó o si es nuevo -->
+  <form *ngIf="notaForm && !cargando" [formGroup]="notaForm" (ngSubmit)="guardarNota()">
+    <ion-list>
+      
+      <!-- Selector de Expediente Clínico -->
+      <ion-item>
+        <ion-select label="Expediente Clínico" labelPlacement="stacked" formControlName="idexpediente" placeholder="Selecciona un expediente">
+          <ion-select-option *ngFor="let exp of expedientes" [value]="exp.idexpediente">
+            Expediente #{{ exp.idexpediente }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('idexpediente') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Fecha -->
+      <ion-item>
+        <ion-input label="Fecha" labelPlacement="stacked" type="date" formControlName="fecha"></ion-input>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('fecha') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Descripción -->
+      <ion-item>
+        <ion-textarea label="Descripción" labelPlacement="stacked" formControlName="descripcion" autoGrow="true" placeholder="Escribe la descripción"></ion-textarea>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('descripcion') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Observaciones -->
+      <ion-item>
+        <ion-textarea label="Observaciones" labelPlacement="stacked" formControlName="observaciones" autoGrow="true" placeholder="Observaciones adicionales (opcional)"></ion-textarea>
+      </ion-item>
+
+    </ion-list>
+
+    <!-- Botón dinámico (Actualizar / Guardar) -->
+    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando || cargando">
+      {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Guardar') }}
+    </ion-button>
+  </form>
 </ion-content>

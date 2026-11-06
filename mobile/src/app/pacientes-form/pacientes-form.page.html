@@ -5,11 +5,17 @@
         Cancelar
       </ion-button>
     </ion-buttons>
-    <ion-title>Nuevo paciente</ion-title>
+    <!-- Título dinámico -->
+    <ion-title>{{ esEdicion ? 'Editar paciente' : 'Nuevo paciente' }}</ion-title>
   </ion-toolbar>
 </ion-header>
-
 <ion-content class="ion-padding">
+  <!-- Spinner mientras carga los datos en modo edición -->
+  <div *ngIf="cargando" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando datos del paciente...</p>
+  </div>
+  
   <form *ngIf="pacienteForm" [formGroup]="pacienteForm" (ngSubmit)="guardarPaciente()">
     <ion-list>
       <ion-item>

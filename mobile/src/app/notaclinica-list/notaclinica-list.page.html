@@ -8,9 +8,28 @@
         <h2>{{ nota.idexpediente }}</h2>
         <p>{{ nota.fecha }}</p>
       </ion-label>
-      <ion-button slot="end" color="warning" [routerLink]="['/notaclinica-view', nota.idnota]">
+      <!-- Boton detalle -->
+      <ion-button slot="end" color="primary" [routerLink]="['/notaclinica-view', nota.idnota]" aria-label="Ver detalle">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
+      <!-- Boton editar -->
+       <ion-button fill="solid" color="warning" (click)="editarNota(nota.idnota)" aria-label="Editar Nota Clinica">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+      <!-- Boton eliminar -->
+       <ion-button fill="solid" color="danger" (click)="confirmarEliminar(nota.idnota)" aria-label="Eliminar nota">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+
     </ion-item>
   </ion-list>
+
+  <!-- Boton flotante de modal -->
+   <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button (click)="nuevaNotaclinica()" aria-label="Nueva Nota Clinica">
+        <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+</ion-fab>
+
+ <app-paginacion [total]="total" [porPagina]="porPagina" [paginaActual]="paginaActual" [maxPaginasVisibles]="5" (paginaCambio)="cambiarPagina($event)"></app-paginacion>
 </ion-content>

@@ -22,8 +22,13 @@ interface Dentista {
   styleUrls: ['./dentistas-list.page.scss'],
   standalone: false,
 })
-export class DentistasListPage implements OnInit {
+export class DentistasListPage {
+  total: number = 0;
+  paginaActual: number = 1;
+  porPagina: number = 8;
+
   titulo: string = 'Dentistas';
+  busqueda: string = '';
 
   dentistas: Dentista[] = [];
 
@@ -32,14 +37,22 @@ export class DentistasListPage implements OnInit {
      private alertController: AlertController
   ) { }
 
-  ngOnInit() {
-    this.cargarDentistas();
+  ionViewWillEnter(): void {
+    void this.cargarDatos();
   }
 
   async cargarDentistas(): Promise<void> {
     try {
       const response = await axios.get<{ data: Dentista[] }>(
-        `${environment.apiUrl}/items/dentista`
+        `${environment.apiUrl}/items/dentista`,
+        {
+        params: {
+          limit: this.porPagina,
+          page: this.paginaActual,
+          sort: 'iddentista',
+          ...this.parametrosBusqueda()
+          }
+        }
       );
       this.dentistas = response.data.data; 
     } catch (error) {
@@ -118,7 +131,7 @@ async eliminarDentista(id: number): Promise<void> {
     await alerta.present();
     await alerta.onDidDismiss();
 
-    await this.cargarDentistas();
+    await this.cargarDatos();
   } catch (error) {
     console.error('Error al eliminar el dentista:', error);
 
@@ -131,5 +144,73 @@ async eliminarDentista(id: number): Promise<void> {
     await alerta.present();
   }
 }
+
+async cargarTotal(): Promise<void> {
+  try {
+    const response = await axios.get<{ data: { count: number | string }[] }>(
+      `${environment.apiUrl}/items/dentista?aggregate[count]=*`,
+      { params: this.parametrosBusqueda() }
+    );
+
+    this.total = Number(
+      response.data.data[0]?.count ?? 0
+    );
+
+  } catch (error) {
+    console.error(
+      'Error al obtener el total de dentistas:',
+      error
+    );
+
+    this.total = 0;
+  }
+}
+private ajustarPaginaActual(): void {
+  const totalPaginas = Math.ceil(
+    this.total / this.porPagina
+  );
+
+  if (totalPaginas === 0) {
+    this.paginaActual = 1;
+    return;
+  }
+
+  if (this.paginaActual > totalPaginas) {
+    this.paginaActual = totalPaginas;
+  }
+}
+
+async cargarDatos(): Promise<void> {
+  await this.cargarTotal();
+  this.ajustarPaginaActual();
+  await this.cargarDentistas();
+}
+async cambiarPagina(
+  pagina: number
+): Promise<void> {
+  this.paginaActual = pagina;
+  await this.cargarDentistas();
+}
+
+/* Busqueda */
+
+  private parametrosBusqueda(): Record<string, string> {
+    const texto = this.busqueda.trim();
+    return texto ? {
+      filter: JSON.stringify({
+        _or: [
+          { nombre: { _icontains: texto } },
+          { paterno: { _icontains: texto } },
+          { materno: { _icontains: texto } },
+        ]
+      })
+    } : {};
+  }
+
+  async handleInput(event: CustomEvent<{ value?: string | null }>): Promise<void> {
+    this.busqueda = event.detail.value ?? '';
+    this.paginaActual = 1;
+    await this.cargarDatos();
+  }
 
 }
