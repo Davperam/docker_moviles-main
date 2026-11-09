@@ -18,7 +18,9 @@ interface Citadetalle {
   standalone: false,
 })
 export class CitadetallesListPage implements OnInit {
+
   titulo: string = 'Detalles de Citas';
+
 
   citadetalles: Citadetalle[] = [];
 

@@ -1,12 +1,10 @@
+import { SharedModule } from '../components/shared.module';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToolbarModule } from '../components/toolbar/toolbar.module';
 
 import { IonicModule } from '@ionic/angular';
-
 import { CitadetallesListPageRoutingModule } from './citadetalles-list-routing.module';
-
 import { CitadetallesListPage } from './citadetalles-list.page';
 
 @NgModule({
@@ -14,7 +12,7 @@ import { CitadetallesListPage } from './citadetalles-list.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    ToolbarModule,
+    SharedModule,
     CitadetallesListPageRoutingModule
   ],
   declarations: [CitadetallesListPage]

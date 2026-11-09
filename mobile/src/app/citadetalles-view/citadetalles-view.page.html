@@ -1,11 +1,5 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/citadetalles-list"></ion-back-button>
-    </ion-buttons>
-    <ion-title>Descripción de la cita</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-toolbar [nombre]="titulo" >
+</app-toolbar>
 
 <ion-content>
   <ion-text color="danger" *ngIf="mensajeError">
@@ -23,3 +17,6 @@
 
   </ion-card>
 </ion-content>
+
+<!-- Menú Rápido Reutilizable -->
+<app-tab-bar tabActivo="alergias"></app-tab-bar>

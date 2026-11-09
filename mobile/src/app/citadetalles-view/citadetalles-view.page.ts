@@ -21,6 +21,8 @@ interface Citadetalle {
 })
 export class CitadetallesViewPage implements OnInit {
 
+  titulo: string = 'Detalles de Cita';
+
   citadetalle: Citadetalle | null = null;
   mensajeError: string = '';
 

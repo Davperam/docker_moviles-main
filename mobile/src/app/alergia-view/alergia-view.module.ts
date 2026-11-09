@@ -1,4 +1,4 @@
-import { ViewToolbarModule } from '../components/view-toolbar/view-toolbar.module';
+import { SharedModule } from '../components/shared.module';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,7 +14,7 @@ import { AlergiaViewPage } from './alergia-view.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    ViewToolbarModule,
+    SharedModule,
     AlergiaViewPageRoutingModule
   ],
   declarations: [AlergiaViewPage]
