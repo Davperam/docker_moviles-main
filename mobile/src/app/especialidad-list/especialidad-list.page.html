@@ -10,6 +10,22 @@
       <ion-button slot="end" color="primary" [routerLink]="['/especialidad-view', especialidad.idespecialidad]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
+      <!-- Actualizar -->
+       <ion-button fill="solid" color="warning" (click)="editarEspecialidad(especialidad.idespecialidad)" aria-label="Editar especialidad">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+      <!-- Eliminar -->
+       <ion-button fill="solid" color="danger" (click)="confirmarEliminar(especialidad.idespecialidad, especialidad.nombre)" aria-label="Eliminar especialidad">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
+
     </ion-item>
   </ion-list>
+
+  <!-- Modal -->
+<ion-fab slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button (click)="nuevaEspecialidad()" aria-label="Nueva Especialidad">
+        <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+</ion-fab>
 </ion-content>

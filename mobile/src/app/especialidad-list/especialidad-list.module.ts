@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ToolbarModule } from '../components/toolbar/toolbar.module';
 import { IonicModule } from '@ionic/angular';
 
+import { EspecialidadFormPageModule } from '../especialidad-form/especialidad-form.module';
+
 import { EspecialidadListPageRoutingModule } from './especialidad-list-routing.module';
 
 import { EspecialidadListPage } from './especialidad-list.page';

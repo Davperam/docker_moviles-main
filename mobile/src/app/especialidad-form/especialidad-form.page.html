@@ -1,0 +1,73 @@
+<ion-header>
+  <ion-toolbar>
+    <!-- Título dinámico según si es creación o edición -->
+    <ion-title>{{ esEdicion ? 'Editar Especialidad' : 'Nueva Especialidad' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cerrarModal()" [disabled]="guardando || cargando">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Spinner mientras se obtienen los datos al editar -->
+  <div *ngIf="cargando" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando especialidad...</p>
+  </div>
+
+  <form *ngIf="especialidadForm && !cargando" [formGroup]="especialidadForm" (ngSubmit)="guardarEspecialidad()">
+
+    <!-- Nombre -->
+    <ion-item>
+      <ion-input 
+        label="Nombre" 
+        labelPlacement="stacked" 
+        formControlName="nombre" 
+        placeholder="Ej. Ortodoncia">
+      </ion-input>
+    </ion-item>
+    <ion-text color="danger" class="ion-padding-start" *ngIf="getError('nombre')">
+      <p><small>{{ getError('nombre') }}</small></p>
+    </ion-text>
+
+    <!-- Descripción -->
+    <ion-item>
+      <ion-textarea 
+        label="Descripción" 
+        labelPlacement="stacked" 
+        formControlName="descripcion" 
+        placeholder="Detalles de la especialidad...">
+      </ion-textarea>
+    </ion-item>
+    <ion-text color="danger" class="ion-padding-start" *ngIf="getError('descripcion')">
+      <p><small>{{ getError('descripcion') }}</small></p>
+    </ion-text>
+
+    <!-- Activo (Valor predeterminado 1) -->
+    <ion-item>
+      <ion-select 
+        label="Estado" 
+        labelPlacement="stacked" 
+        formControlName="activo">
+        <ion-select-option [value]="1">Activo</ion-select-option>
+        <ion-select-option [value]="0">Inactivo</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-text color="danger" class="ion-padding-start" *ngIf="getError('activo')">
+      <p><small>{{ getError('activo') }}</small></p>
+    </ion-text>
+
+    <!-- Botón de Guardado / Actualizado -->
+    <div class="ion-margin-top">
+      <ion-button expand="block" type="submit" [disabled]="guardando || cargando">
+        <ion-spinner *ngIf="guardando" name="crescent" class="ion-margin-end"></ion-spinner>
+        <span *ngIf="!guardando">
+          {{ esEdicion ? 'Actualizar Especialidad' : 'Guardar Especialidad' }}
+        </span>
+      </ion-button>
+    </div>
+
+  </form>
+</ion-content>

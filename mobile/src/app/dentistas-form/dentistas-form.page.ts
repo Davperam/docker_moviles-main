@@ -132,7 +132,7 @@ export class DentistasFormPage implements OnInit {
     return this.mensajesValidacion[controlName]?.[tipoError]
       ?? 'El valor ingresado no es válido.';
   }
-
+  /* Obtener datos de Dentista por el metodo GET */
   private async cargarDentista(): Promise<void> {
     if (this.id === undefined) {
       return;
