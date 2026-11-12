@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 import { ModalController, AlertController } from '@ionic/angular';
@@ -17,23 +17,37 @@ interface Medicamento {
   styleUrls: ['./medicamentos-list.page.scss'],
   standalone: false,
 })
-export class MedicamentosListPage implements OnInit {
+export class MedicamentosListPage {
+   titulo: string = 'Medicamentos';
+   busqueda: string = '';
 
-  medicamentos: Medicamento[] = [];
+   total: number = 0;
+   paginaActual: number = 1;
+   porPagina: number = 8;
 
   constructor(
     private modalController: ModalController,
     private alertController: AlertController
   ) { }
 
-  ngOnInit() {
-    this.cargarMedicamentos();
+  medicamentos: Medicamento[] = [];
+
+  ionViewWillEnter(): void {
+    void this.cargarDatos();
   }
 
   async cargarMedicamentos(): Promise<void> {
     try {
       const response = await axios.get<{ data: Medicamento[] }>(
-        `${environment.apiUrl}/items/medicamento`
+        `${environment.apiUrl}/items/medicamento`,
+        {
+          params: {
+            limit: this.porPagina,
+            page: this.paginaActual,
+            sort: 'idmedicamento',
+            ...this.parametrosBusqueda()
+          }
+        }
       );
       this.medicamentos = response.data.data; 
     } catch (error) {
@@ -115,7 +129,7 @@ async eliminarMedicamento(id: number): Promise<void> {
     await alerta.present();
     await alerta.onDidDismiss();
 
-    await this.cargarMedicamentos();
+    await this.cargarDatos();
   } catch (error) {
     console.error('Error al eliminar el medicamento:', error);
 
@@ -128,5 +142,71 @@ async eliminarMedicamento(id: number): Promise<void> {
     await alerta.present();
   }
 }
+
+  async cargarTotal(): Promise<void> {
+    try {
+      const response = await axios.get<{ data: { count: number | string }[] }>(
+        `${environment.apiUrl}/items/medicamento?aggregate[count]=*`,
+        { params: this.parametrosBusqueda() }
+      );
+
+      this.total = Number(
+        response.data.data[0]?.count ?? 0
+      );
+
+    } catch (error) {
+      console.error(
+        'Error al obtener el total de medicamentos:',
+        error
+      );
+
+      this.total = 0;
+    }
+  }
+  private ajustarPaginaActual(): void {
+    const totalPaginas = Math.ceil(
+      this.total / this.porPagina
+    );
+
+    if (totalPaginas === 0) {
+      this.paginaActual = 1;
+      return;
+    }
+
+    if (this.paginaActual > totalPaginas) {
+      this.paginaActual = totalPaginas;
+    }
+  }
+  async cargarDatos(): Promise<void> {
+    await this.cargarTotal();
+    this.ajustarPaginaActual();
+    await this.cargarMedicamentos();
+  }
+  async cambiarPagina(
+    pagina: number
+  ): Promise<void> {
+    this.paginaActual = pagina;
+    await this.cargarMedicamentos();
+  }
+
+  /* Busqueda */
+  
+  private parametrosBusqueda(): Record<string, string> {
+    const texto = this.busqueda.trim();
+    return texto ? {
+      filter: JSON.stringify({
+        _or: [
+          { nombre: { _icontains: texto } },
+          { descripcion: { _icontains: texto } }
+        ]
+      })
+    } : {};
+  }
+
+  async handleInput(event: CustomEvent<{ value?: string | null }>): Promise<void> {
+    this.busqueda = event.detail.value ?? '';
+    this.paginaActual = 1;
+    await this.cargarDatos();
+  }
 
 }

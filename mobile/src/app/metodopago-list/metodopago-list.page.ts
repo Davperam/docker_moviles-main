@@ -16,6 +16,7 @@ interface MetodoPago {
   standalone: false,
 })
 export class MetodopagoListPage implements OnInit {
+  titulo: string = 'Método de Pagos';
 
   metodosPago: MetodoPago[] = [];
 

@@ -27,6 +27,7 @@ export class DocumentosclinicosListPage {
   porPagina: number = 8;
 
   titulo: string = 'Documentos clínicos';
+  busqueda: string = '';
 
   documentos: DocumentoClinico[] = [];
 
@@ -47,7 +48,8 @@ export class DocumentosclinicosListPage {
         params: {
           limit: this.porPagina,
           page: this.paginaActual,
-          sort: 'iddocumento'
+          sort: 'iddocumento',
+          ...this.parametrosBusqueda()
         }
       }
       );
@@ -149,7 +151,8 @@ async eliminarDocumento(id: number): Promise<void> {
 async cargarTotal(): Promise<void> {
   try {
     const response = await axios.get<{ data: { count: number | string }[] }>(
-      `${environment.apiUrl}/items/documentoclinico?aggregate[count]=*`
+      `${environment.apiUrl}/items/documentoclinico?aggregate[count]=*`,
+      { params: this.parametrosBusqueda() }
     );
 
     this.total = Number(
@@ -190,5 +193,24 @@ async cambiarPagina(
   this.paginaActual = pagina;
   await this.cargarDocumentos();
 }
+
+/* Busqueda */
+
+  private parametrosBusqueda(): Record<string, string> {
+    const texto = this.busqueda.trim();
+    return texto ? {
+      filter: JSON.stringify({
+        _or: [
+          { nombredocumento: { _icontains: texto } },
+        ]
+      })
+    } : {};
+  }
+
+  async handleInput(event: CustomEvent<{ value?: string | null }>): Promise<void> {
+    this.busqueda = event.detail.value ?? '';
+    this.paginaActual = 1;
+    await this.cargarDatos();
+  }
 
 }

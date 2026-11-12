@@ -15,6 +15,7 @@ interface ExpedienteAlergia {
   standalone: false,
 })
 export class ExpedientealergiaListPage implements OnInit {
+  titulo: string = 'Expediente de Alergias';
 
   expedienteAlergias : ExpedienteAlergia[] = [];
 

@@ -1,16 +1,25 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button fill="solid" (click)="cerrarModal()">
+      <ion-button fill="solid" (click)="cerrarModal()" [disabled]="guardando || cargando">
         Cancelar
       </ion-button>
     </ion-buttons>
-    <ion-title>Nuevo servicio</ion-title>
+
+    <!-- Título dinámico -->
+    <ion-title>{{ esEdicion ? 'Editar servicio' : 'Nuevo servicio' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form *ngIf="servicioForm" [formGroup]="servicioForm" (ngSubmit)="guardarServicio()">
+
+  <!-- Spinner de carga cuando se abre en modo edición -->
+  <div *ngIf="cargando" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando datos del servicio...</p>
+  </div>
+
+  <form *ngIf="servicioForm && !cargando" [formGroup]="servicioForm" (ngSubmit)="guardarServicio()">
     <ion-list>
       <!-- Nombre -->
       <ion-item>
@@ -38,15 +47,17 @@
 
       <!-- Duración -->
       <ion-item>
-        <ion-input label="Duración (HH:MM:SS)" labelPlacement="stacked" type="text" formControlName="duracion" placeholder="01:30:00"></ion-input>
+        <ion-input label="Duración (en minutos)" labelPlacement="stacked" type="number" formControlName="duracion" min="1" placeholder="Ej. 45"></ion-input>
       </ion-item>
       <ion-note color="danger" *ngIf="getError('duracion') as error">
         {{ error }}
       </ion-note>
-
-    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando">
-      {{ guardando ? 'Guardando...' : 'Guardar Servicio' }}
-    </ion-button>
     </ion-list>
+
+    <!-- Botón dinámico de Guardado/Actualización -->
+    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando || cargando">
+      {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar Servicio' : 'Guardar Servicio') }}
+    </ion-button>
+
   </form>
 </ion-content>

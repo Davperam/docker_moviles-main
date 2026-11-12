@@ -213,7 +213,8 @@ const routes: Routes = [
   {
     path: 'login',
     loadChildren: () => import('./login/login.module').then( m => m.LoginPageModule)
-  },  {
+  },
+  {
     path: 'especialidad-form',
     loadChildren: () => import('./especialidad-form/especialidad-form.module').then( m => m.EspecialidadFormPageModule)
   },

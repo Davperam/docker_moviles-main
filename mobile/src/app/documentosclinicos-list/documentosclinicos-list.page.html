@@ -2,6 +2,8 @@
 </app-toolbar>
 
 <ion-content>
+  <ion-searchbar [value]="busqueda" [debounce]="300" (ionInput)="handleInput($event)" placeholder="Buscar documentos" aria-label="Buscar documentos"></ion-searchbar>
+  <p class="ion-padding" *ngIf="total === 0">No se encontraron documentos.</p>
   <ion-list>
     <ion-item *ngFor="let documento of documentos">
       <ion-label class="ion-text-wrap">

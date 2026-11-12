@@ -2,6 +2,8 @@
 </app-toolbar>
 
 <ion-content>
+  <ion-searchbar [value]="busqueda" [debounce]="300" (ionInput)="handleInput($event)" placeholder="Buscar especialidad" aria-label="Buscar especialidad"></ion-searchbar>
+    <p class="ion-padding" *ngIf="total === 0">No se encontraron especialidades.</p>
   <ion-list>
     <ion-item *ngFor="let especialidad of especialidades">
       <ion-label class="ion-text-wrap">
@@ -21,6 +23,10 @@
 
     </ion-item>
   </ion-list>
+
+  <app-paginacion
+  [total]="total" [porPagina]="porPagina" [paginaActual]="paginaActual" [maxPaginasVisibles]="5" (paginaCambio)="cambiarPagina($event)">
+</app-paginacion>
 
   <!-- Modal -->
 <ion-fab slot="fixed" vertical="bottom" horizontal="center">

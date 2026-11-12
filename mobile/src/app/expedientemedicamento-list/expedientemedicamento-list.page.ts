@@ -15,6 +15,7 @@ interface ExpedienteMedicamento {
   standalone: false,
 })
 export class ExpedientemedicamentoListPage implements OnInit {
+   titulo: string = 'Expediente de Medicamentos';
 
   expedientemedicamentos: ExpedienteMedicamento[] = [];
 

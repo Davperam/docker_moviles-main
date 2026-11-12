@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component} from '@angular/core';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 import { ModalController, AlertController } from '@ionic/angular';
@@ -17,8 +17,13 @@ interface Especialidad {
   styleUrls: ['./especialidad-list.page.scss'],
   standalone: false,
 })
-export class EspecialidadListPage implements OnInit {
+export class EspecialidadListPage {
   titulo: string = 'Especialidades Consultorio';
+  busqueda: string = '';
+
+  total: number = 0;
+  paginaActual: number = 1;
+  porPagina: number = 8;
 
   especialidades: Especialidad[] = [];
 
@@ -27,14 +32,22 @@ export class EspecialidadListPage implements OnInit {
     private alertController: AlertController
   ) {}
 
-  ngOnInit() {
-    this.cargarEspecialidades();
+  ionViewWillEnter(): void {
+    void this.cargarDatos();
   }
 
   async cargarEspecialidades(): Promise<void> {
     try {
       const response = await axios.get<{ data: Especialidad[] }>(
-        `${environment.apiUrl}/items/especialidad`
+        `${environment.apiUrl}/items/especialidad`,
+        {
+          params: {
+            limit: this.porPagina,
+            page: this.paginaActual,
+            sort: 'idespecialidad',
+            ...this.parametrosBusqueda()
+          }
+        }
       );
       this.especialidades = response.data.data; 
     } catch (error) {
@@ -113,7 +126,7 @@ async eliminarEspecialidad(id: number): Promise<void> {
     await alerta.present();
     await alerta.onDidDismiss();
 
-    await this.cargarEspecialidades();
+    await this.cargarDatos();
   } catch (error) {
     console.error('Error al eliminar la especialidad:', error);
 
@@ -126,5 +139,70 @@ async eliminarEspecialidad(id: number): Promise<void> {
     await alerta.present();
   }
 }
+
+async cargarTotal(): Promise<void> {
+  try {
+    const response = await axios.get<{ data: { count: number | string }[] }>(
+      `${environment.apiUrl}/items/especialidad?aggregate[count]=*`,
+      { params: this.parametrosBusqueda() }
+    );
+
+    this.total = Number(
+      response.data.data[0]?.count ?? 0
+    );
+
+  } catch (error) {
+    console.error(
+      'Error al obtener el total de especialidades:',
+      error
+    );
+
+    this.total = 0;
+  }
+}
+private ajustarPaginaActual(): void {
+  const totalPaginas = Math.ceil(
+    this.total / this.porPagina
+  );
+
+  if (totalPaginas === 0) {
+    this.paginaActual = 1;
+    return;
+  }
+
+  if (this.paginaActual > totalPaginas) {
+    this.paginaActual = totalPaginas;
+  }
+}
+async cargarDatos(): Promise<void> {
+  await this.cargarTotal();
+  this.ajustarPaginaActual();
+  await this.cargarEspecialidades();
+}
+async cambiarPagina(
+  pagina: number
+): Promise<void> {
+  this.paginaActual = pagina;
+  await this.cargarEspecialidades();
+}
+
+/* Busqueda */
+  private parametrosBusqueda(): Record<string, string> {
+    const texto = this.busqueda.trim();
+    return texto ? {
+      filter: JSON.stringify({
+        _or: [
+          { nombre: { _icontains: texto } },
+          { descripcion: { _icontains: texto } }
+        ]
+      })
+    } : {};
+  }
+
+  async handleInput(event: CustomEvent<{ value?: string | null }>): Promise<void> {
+    this.busqueda = event.detail.value ?? '';
+    this.paginaActual = 1;
+    await this.cargarDatos();
+  }
 
 }

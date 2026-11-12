@@ -17,6 +17,7 @@ interface EstadoCita {
 })
 
 export class EstadocitaListPage implements OnInit {
+  titulo: string = 'Estado de Citas';
 
   estadocitas: EstadoCita[] = [];
 

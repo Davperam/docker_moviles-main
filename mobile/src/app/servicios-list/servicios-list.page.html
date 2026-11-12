@@ -1,8 +1,6 @@
-<ion-header>
-  <ion-toolbar color="prueba">
-    <ion-title>Lista de servicios</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-toolbar [nombre]="titulo">
+  
+</app-toolbar>
 
 <ion-content>
   <ion-list>
@@ -11,8 +9,17 @@
         <h2>{{ servicio.nombre }}</h2>
         <p>Precio: ${{ servicio.precio | number:'1.2-2' }}</p>
       </ion-label>
-      <ion-button slot="end" color="warning" [routerLink]="['/servicios-view', servicio.idservicio]">
+      <!-- Detalles -->
+      <ion-button slot="end" color="primary" [routerLink]="['/servicios-view', servicio.idservicio]">
         <ion-icon name="eye-outline"></ion-icon>
+      </ion-button>
+      <!-- Actualizar -->
+       <ion-button fill="solid" color="warning" (click)="editarServicio(servicio.idservicio)" aria-label="Editar servicio">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+      <!-- Eliminar -->
+       <ion-button fill="solid" color="danger" (click)="confirmarEliminar(servicio.idservicio, servicio.nombre)" aria-label="Eliminar servicio">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
       </ion-button>
     </ion-item>
   </ion-list>

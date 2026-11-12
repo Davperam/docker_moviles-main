@@ -1,10 +1,10 @@
-<ion-header>
-  <ion-toolbar color="prueba">
-    <ion-title>Lista de medicamentos</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-toolbar [nombre]="titulo">
+  
+</app-toolbar>
 
 <ion-content>
+  <ion-searchbar [value]="busqueda" [debounce]="300" (ionInput)="handleInput($event)" placeholder="Buscar medicamento" aria-label="Buscar medicamento"></ion-searchbar>
+<p class="ion-padding" *ngIf="total === 0">No se encontraron medicamentos.</p>
   <ion-list>
     <ion-item *ngFor="let medicamento of medicamentos">
       <ion-label class="ion-text-wrap">
@@ -24,6 +24,11 @@
       
     </ion-item>
   </ion-list>
+
+  <!-- Paginación -->
+   <app-paginacion
+    [total]="total" [porPagina]="porPagina" [paginaActual]="paginaActual" [maxPaginasVisibles]="5" (paginaCambio)="cambiarPagina($event)">
+  </app-paginacion>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="center">
       <ion-fab-button (click)="nuevoMedicamento()" aria-label="Nuevo medicamento">

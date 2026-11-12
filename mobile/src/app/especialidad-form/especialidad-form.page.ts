@@ -161,7 +161,7 @@ export class EspecialidadFormPage implements OnInit {
           }
         );
       } else {
-        // POST si estamos creando
+        // POST para la creación de especialidad
         await axios.post(
           `${environment.apiUrl}/items/especialidad`,
           especialidad,

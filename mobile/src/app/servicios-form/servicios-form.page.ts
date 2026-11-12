@@ -1,14 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
 import axios from 'axios';
 import { environment } from '../../environments/environment';
 
-interface Servicio {
+interface ServicioGuardar {
   nombre: string;
   descripcion: string;
   precio: number;
-  duracion: string;
+  duracion: number;
+}
+
+interface ServicioDetalle {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  precio: number | string;
+  duracion: number | string;
 }
 
 @Component({
@@ -19,7 +27,11 @@ interface Servicio {
 })
 export class ServiciosFormPage implements OnInit {
 
+  // Recibe el ID desde el listado si se va a editar
+  @Input() id?: number;
+
   servicioForm!: FormGroup;
+  cargando: boolean = false;
   guardando: boolean = false;
 
   mensajesValidacion: Record<string, Record<string, string>> = {
@@ -35,7 +47,8 @@ export class ServiciosFormPage implements OnInit {
       min: 'El precio debe ser mayor o igual a 0.'
     },
     duracion: {
-      required: 'La duración es obligatoria (ej. 01:30:00).'
+      required: 'La duración en minutos es obligatoria.',
+      min: 'La duración debe ser de al menos 1 minuto.'
     },
   };
 
@@ -45,8 +58,18 @@ export class ServiciosFormPage implements OnInit {
     private modalController: ModalController
   ) { }
 
-  ngOnInit() {
+  // Determina si estamos en modo edición
+  get esEdicion(): boolean {
+    return this.id !== undefined;
+  }
+
+  async ngOnInit(): Promise<void> {
     this.crearFormulario();
+
+    // Si viene un ID, cargamos los datos existentes del servicio
+    if (this.esEdicion) {
+      await this.cargarServicio();
+    }
   }
 
   private crearFormulario(): void {
@@ -54,7 +77,7 @@ export class ServiciosFormPage implements OnInit {
       nombre: ['', [Validators.required, Validators.maxLength(150)]],
       descripcion: ['', [Validators.required]],
       precio: ['', [Validators.required, Validators.min(0)]],
-      duracion: ['', [Validators.required]],
+      duracion: ['', [Validators.required, Validators.min(1)]]
     });
   }
 
@@ -69,6 +92,42 @@ export class ServiciosFormPage implements OnInit {
 
     return this.mensajesValidacion[controlName]?.[tipoError]
       ?? 'El valor ingresado no es válido.';
+  }
+
+  // Consulta el servicio por su ID y llena el formulario
+  private async cargarServicio(): Promise<void> {
+    if (this.id === undefined) {
+      return;
+    }
+
+    this.cargando = true;
+
+    try {
+      const response = await axios.get<{ data: ServicioDetalle }>(
+        `${environment.apiUrl}/items/servicio/${this.id}`
+      );
+
+      const servicio = response.data.data;
+
+      this.servicioForm.patchValue({
+        nombre: servicio.nombre,
+        descripcion: servicio.descripcion,
+        precio: servicio.precio,
+        duracion: servicio.duracion
+      });
+    } catch (error: any) {
+      console.error('Error al cargar el servicio:', error.response?.data || error);
+
+      const alerta = await this.alertController.create({
+        header: 'Error',
+        message: 'No fue posible cargar los datos del servicio. Revisa la conexión, el ID y los permisos en Directus.',
+        buttons: ['Aceptar']
+      });
+
+      await alerta.present();
+    } finally {
+      this.cargando = false;
+    }
   }
 
   async cerrarModal(): Promise<void> {
@@ -86,25 +145,39 @@ export class ServiciosFormPage implements OnInit {
     this.guardando = true;
     const valores = this.servicioForm.value;
 
-    const servicioData: Servicio = {
+    const servicioData: ServicioGuardar = {
       nombre: valores.nombre?.trim() ?? '',
-      descripcion: valores.descripcion?.trim() ?? '',
+      descripcion: valores.descripcion?.trim() || 'Sin descripción',
       precio: Number(valores.precio) || 0,
-      duracion: valores.duracion?.trim() ?? '',
+      duracion: Number(valores.duracion)
     };
 
     try {
-      await axios.post(
-        `${environment.apiUrl}/items/servicio`,
-        servicioData,
-        {
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+      if (this.esEdicion && this.id !== undefined) {
+        // Petición PATCH para actualizar
+        await axios.patch(
+          `${environment.apiUrl}/items/servicio/${this.id}`,
+          servicioData,
+          {
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+      } else {
+        // Petición POST para crear
+        await axios.post(
+          `${environment.apiUrl}/items/servicio`,
+          servicioData,
+          {
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+      }
 
       const alerta = await this.alertController.create({
-        header: 'Servicio guardado',
-        message: 'El servicio fue registrado correctamente.',
+        header: this.esEdicion ? 'Servicio actualizado' : 'Servicio guardado',
+        message: this.esEdicion
+          ? 'El servicio fue actualizado correctamente.'
+          : 'El servicio fue registrado correctamente.',
         buttons: ['Aceptar']
       });
 
@@ -113,11 +186,16 @@ export class ServiciosFormPage implements OnInit {
 
       await this.modalController.dismiss({ guardado: true });
     } catch (error: any) {
-      console.error('Detalle completo del error de Directus:', JSON.stringify(error.response?.data, null, 2) || error);
+      console.error(
+        this.esEdicion ? 'Error al actualizar el servicio:' : 'Error al guardar el servicio:',
+        JSON.stringify(error.response?.data, null, 2) || error
+      );
 
       const alerta = await this.alertController.create({
         header: 'Error',
-        message: 'No fue posible guardar el servicio. Revisa los datos en la consola.',
+        message: this.esEdicion
+          ? 'No fue posible actualizar el servicio. Revisa los datos y los permisos de actualización en Directus.'
+          : 'No fue posible guardar el servicio. Revisa los datos y los permisos de creación en Directus.',
         buttons: ['Aceptar']
       });
 

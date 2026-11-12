@@ -207,7 +207,7 @@ export class PacientesFormPage implements OnInit {
             headers: { 'Content-Type': 'application/json' }
           }
         );
-      }
+      } 
 
       const alerta = await this.alertController.create({
         header: this.esEdicion ? 'Paciente actualizado' : 'Paciente guardado',
