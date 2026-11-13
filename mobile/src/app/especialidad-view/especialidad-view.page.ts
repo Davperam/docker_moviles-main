@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { EspecialidadService } from '../services/especialidad';
 
 interface Especialidad {
   idespecialidad: number;
@@ -24,12 +24,14 @@ export class EspecialidadViewPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private especialidadesService: EspecialidadService
   ) { }
 
   ngOnInit() {
     this.cargarEspecialidad();
   }
+
   async cargarEspecialidad(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
 
@@ -49,16 +51,14 @@ export class EspecialidadViewPage implements OnInit {
     await loading.present();
 
     try {
-      const response = await axios.get<{ data: Especialidad }>(
-        `${environment.apiUrl}/items/especialidad/${encodeURIComponent(id)}`
+      this.especialidad = await firstValueFrom(
+        this.especialidadesService.detalle(Number(id))
       );
-      this.especialidad = response.data.data;
     } catch (error) {
       console.error('Error al cargar la especialidad:', error);
       this.mensajeError = 'Ocurrió un error al cargar la especialidad.';
     } finally {
-      loading.dismiss();
+      await loading.dismiss();
     }
   }
-
 }

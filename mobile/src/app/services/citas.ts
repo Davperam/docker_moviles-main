@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { defer, map, Observable } from 'rxjs';
-import { environment } from 'src/environments/environment';
+import axios from 'axios';
+import { environment } from '../../environments/environment';
 
 export interface Cita {
   idcita: number;
@@ -26,53 +26,46 @@ export interface CitaGuardar {
   observaciones: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class CitasService {
-  private apiUrl = environment.apiUrl + '/items/cita';
+  private url = environment.apiUrl + '/items/cita';
 
-  constructor(private http: HttpClient) {}
+  private filtro(busqueda: string): Record<string, string> {
+    const texto = busqueda.trim();
+    return texto ? { filter: JSON.stringify({ _or: [
+      { motivo: { _icontains: texto } },
+      { observaciones: { _icontains: texto } }
+    ] }) } : {};
+  }
 
-  listado(pagina: number = 1, porPagina: number = 10, busqueda: string = ''): Observable<Cita[]> {
-    let params = new HttpParams()
-      .set('page', pagina.toString())
-      .set('per_page', porPagina.toString());
-    
-    if (busqueda) {
-      params = params.set('q', busqueda);
-    }
-
-    return defer(() => this.http.get<any>(this.apiUrl, { params })).pipe(
-      map(response => response.data || response) // Ajusta según la estructura de tu respuesta API
-    );
+  listado(pagina = 1, porPagina = 8, busqueda = ''): Observable<Cita[]> {
+    return defer(() => axios.get<{ data: Cita[] }>(this.url, {
+      params: { page: pagina, limit: porPagina, sort: '-idcita', ...this.filtro(busqueda) }
+    })).pipe(map(response => response.data.data));
   }
 
   detalle(id: number): Observable<Cita> {
-    return defer(() => this.http.get<Cita>(`${this.apiUrl}/${id}`)).pipe(
-      map(response => response.data || response)
-    );
+    return defer(() => axios.get<{ data: Cita }>(this.url + '/' + id))
+      .pipe(map(response => response.data.data));
   }
 
   crear(cita: CitaGuardar): Observable<Cita> {
-    return defer(() => this.http.post<Cita>(this.apiUrl, cita));
+    return defer(() => axios.post<{ data: Cita }>(this.url, cita))
+      .pipe(map(response => response.data.data));
   }
 
   actualizar(id: number, cita: CitaGuardar): Observable<Cita> {
-    return defer(() => this.http.patch<Cita>(`${this.apiUrl}/${id}`, cita));
+    return defer(() => axios.patch<{ data: Cita }>(this.url + '/' + id, cita))
+      .pipe(map(response => response.data.data));
   }
 
   eliminar(id: number): Observable<void> {
-    return defer(() => this.http.delete<void>(`${this.apiUrl}/${id}`));
+    return defer(() => axios.delete(this.url + '/' + id)).pipe(map(() => undefined));
   }
 
-  total(busqueda: string = ''): Observable<number> {
-    let params = new HttpParams();
-    if (busqueda) {
-      params = params.set('q', busqueda);
-    }
-    return defer(() => this.http.get<any>(`${this.apiUrl}/total`, { params })).pipe(
-      map(response => response.total || response)
-    );
+  total(busqueda = ''): Observable<number> {
+    return defer(() => axios.get<{ data: { count: string | number }[] }>(this.url, {
+      params: { 'aggregate[count]': '*', ...this.filtro(busqueda) }
+    })).pipe(map(response => Number(response.data.data[0]?.count ?? 0)));
   }
 }

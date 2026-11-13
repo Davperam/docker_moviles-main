@@ -1,17 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { EspecialidadService } from '../services/especialidad';
 
 interface EspecialidadGuardar {
-  nombre: string;
-  descripcion: string;
-  activo: number;
-}
-
-interface EspecialidadDetalle {
-  id: number;
   nombre: string;
   descripcion: string;
   activo: number;
@@ -25,7 +18,6 @@ interface EspecialidadDetalle {
 })
 export class EspecialidadFormPage implements OnInit {
 
-  // Recibe el ID enviado desde componentProps del modal
   @Input() id?: number;
 
   especialidadForm!: FormGroup;
@@ -48,10 +40,10 @@ export class EspecialidadFormPage implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private especialidadesService: EspecialidadService
   ) {}
 
-  // Determina si está en modo edición si se recibió un id
   get esEdicion(): boolean {
     return this.id !== undefined;
   }
@@ -59,7 +51,6 @@ export class EspecialidadFormPage implements OnInit {
   async ngOnInit(): Promise<void> {
     this.crearFormulario();
 
-    // Si viene un ID, consulta y llena los datos existentes
     if (this.esEdicion) {
       await this.cargarEspecialidad();
     }
@@ -91,7 +82,6 @@ export class EspecialidadFormPage implements OnInit {
       ?? 'El valor ingresado no es válido.';
   }
 
-  // Carga los datos de la especialidad desde Directus Metodo GET
   private async cargarEspecialidad(): Promise<void> {
     if (this.id === undefined) {
       return;
@@ -100,11 +90,9 @@ export class EspecialidadFormPage implements OnInit {
     this.cargando = true;
 
     try {
-      const response = await axios.get<{ data: EspecialidadDetalle }>(
-        `${environment.apiUrl}/items/especialidad/${this.id}`
+      const especialidad = await firstValueFrom(
+        this.especialidadesService.detalle(this.id)
       );
-
-      const especialidad = response.data.data;
 
       this.especialidadForm.patchValue({
         nombre: especialidad.nombre,
@@ -127,9 +115,7 @@ export class EspecialidadFormPage implements OnInit {
   }
 
   async cerrarModal(): Promise<void> {
-    await this.modalController.dismiss({
-      guardado: false
-    });
+    await this.modalController.dismiss({ guardado: false });
   }
 
   async guardarEspecialidad(): Promise<void> {
@@ -150,27 +136,9 @@ export class EspecialidadFormPage implements OnInit {
 
     try {
       if (this.esEdicion && this.id !== undefined) {
-        // PATCH si estamos editando
-        await axios.patch(
-          `${environment.apiUrl}/items/especialidad/${this.id}`,
-          especialidad,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await firstValueFrom(this.especialidadesService.actualizar(this.id, especialidad));
       } else {
-        // POST para la creación de especialidad
-        await axios.post(
-          `${environment.apiUrl}/items/especialidad`,
-          especialidad,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await firstValueFrom(this.especialidadesService.crear(especialidad));
       }
 
       const alerta = await this.alertController.create({
@@ -184,9 +152,7 @@ export class EspecialidadFormPage implements OnInit {
       await alerta.present();
       await alerta.onDidDismiss();
 
-      await this.modalController.dismiss({
-        guardado: true
-      });
+      await this.modalController.dismiss({ guardado: true });
     } catch (error) {
       console.error(
         this.esEdicion
@@ -208,5 +174,4 @@ export class EspecialidadFormPage implements OnInit {
       this.guardando = false;
     }
   }
-
 }

@@ -1,20 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { DocumentosclinicosService } from '../services/documentosclinicos';
 
 interface DocumentoGuardar {
-  idexpediente: number;
-  nombredocumento: string;
-  rutaarchivo: string;
-  tipodocumento: string;
-  activo: number;
-}
-
-interface DocumentoDetalle {
-  iddocumento?: number;
-  id?: number;
   idexpediente: number;
   nombredocumento: string;
   rutaarchivo: string;
@@ -30,7 +20,7 @@ interface DocumentoDetalle {
 })
 export class DocumentosclinicosFormPage implements OnInit {
 
-  @Input() id?: number; // Recibe el ID si estamos editando
+  @Input() id?: number;
 
   documentoForm!: FormGroup;
   cargando: boolean = false;
@@ -61,7 +51,8 @@ export class DocumentosclinicosFormPage implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private documentosService: DocumentosclinicosService
   ) { }
 
   get esEdicion(): boolean {
@@ -89,8 +80,7 @@ export class DocumentosclinicosFormPage implements OnInit {
 
   async cargarExpedientes(): Promise<void> {
     try {
-      const response = await axios.get(`${environment.apiUrl}/items/expedienteclinico`);
-      this.expedientesList = response.data.data;
+      this.expedientesList = await firstValueFrom(this.documentosService.expedientes());
     } catch (error) {
       console.error('Error al cargar la lista de expedientes:', error);
     }
@@ -104,10 +94,7 @@ export class DocumentosclinicosFormPage implements OnInit {
     this.cargando = true;
 
     try {
-      const response = await axios.get<{ data: DocumentoDetalle }>(
-        `${environment.apiUrl}/items/documentoclinico/${this.id}`
-      );
-      const doc = response.data.data;
+      const doc = await firstValueFrom(this.documentosService.detalle(this.id));
 
       this.documentoForm.patchValue({
         idexpediente: doc.idexpediente,
@@ -163,17 +150,9 @@ export class DocumentosclinicosFormPage implements OnInit {
 
     try {
       if (this.esEdicion && this.id !== undefined) {
-        await axios.patch(
-          `${environment.apiUrl}/items/documentoclinico/${this.id}`,
-          documento,
-          { headers: { 'Content-Type': 'application/json' } }
-        );
+        await firstValueFrom(this.documentosService.actualizar(this.id, documento));
       } else {
-        await axios.post(
-          `${environment.apiUrl}/items/documentoclinico`,
-          documento,
-          { headers: { 'Content-Type': 'application/json' } }
-        );
+        await firstValueFrom(this.documentosService.crear(documento));
       }
 
       const alerta = await this.alertController.create({
@@ -187,7 +166,7 @@ export class DocumentosclinicosFormPage implements OnInit {
 
       await this.modalController.dismiss({ guardado: true });
     } catch (error: any) {
-      console.error('Error al guardar el documento:', error.response?.data || error);
+      console.error('Error al guardar el documento:', error);
 
       const alerta = await this.alertController.create({
         header: 'Error',
@@ -200,5 +179,4 @@ export class DocumentosclinicosFormPage implements OnInit {
       this.guardando = false;
     }
   }
-
 }

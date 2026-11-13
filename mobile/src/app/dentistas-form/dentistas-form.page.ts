@@ -1,22 +1,10 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { DentistasService } from '../services/dentistas';
 
 interface DentistaGuardar {
-  nombre: string;
-  paterno: string;
-  materno: string;
-  cedula: string;
-  telefono: string;
-  correo: string;
-  activo: number;
-}
-
-interface DentistaDetalle {
-  iddentista?: number;
-  id?: number;
   nombre: string;
   paterno: string;
   materno: string;
@@ -73,7 +61,8 @@ export class DentistasFormPage implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private dentistasService: DentistasService,
   ) { }
 
   get esEdicion(): boolean {
@@ -132,7 +121,7 @@ export class DentistasFormPage implements OnInit {
     return this.mensajesValidacion[controlName]?.[tipoError]
       ?? 'El valor ingresado no es válido.';
   }
-  /* Obtener datos de Dentista por el metodo GET */
+
   private async cargarDentista(): Promise<void> {
     if (this.id === undefined) {
       return;
@@ -141,11 +130,7 @@ export class DentistasFormPage implements OnInit {
     this.cargando = true;
 
     try {
-      const response = await axios.get<{ data: DentistaDetalle }>(
-        `${environment.apiUrl}/items/dentista/${this.id}`
-      );
-
-      const dentista = response.data.data;
+      const dentista = await firstValueFrom(this.dentistasService.detalle(this.id));
 
       this.dentistaForm.patchValue({
         nombre: dentista.nombre,
@@ -172,9 +157,7 @@ export class DentistasFormPage implements OnInit {
   }
 
   async cerrarModal(): Promise<void> {
-    await this.modalController.dismiss({
-      guardado: false
-    });
+    await this.modalController.dismiss({ guardado: false });
   }
 
   async guardarDentista(): Promise<void> {
@@ -198,21 +181,9 @@ export class DentistasFormPage implements OnInit {
 
     try {
       if (this.esEdicion && this.id !== undefined) {
-        await axios.patch(
-          `${environment.apiUrl}/items/dentista/${this.id}`,
-          dentista,
-          {
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+        await firstValueFrom(this.dentistasService.actualizar(this.id, dentista));
       } else {
-        await axios.post(
-          `${environment.apiUrl}/items/dentista`,
-          dentista,
-          {
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+        await firstValueFrom(this.dentistasService.crear(dentista));
       }
 
       const alerta = await this.alertController.create({
@@ -232,7 +203,7 @@ export class DentistasFormPage implements OnInit {
         this.esEdicion
           ? 'Error al actualizar el dentista:'
           : 'Error al guardar el dentista:',
-        error.response?.data || error
+        error
       );
 
       const alerta = await this.alertController.create({
@@ -248,5 +219,4 @@ export class DentistasFormPage implements OnInit {
       this.guardando = false;
     }
   }
-
 }

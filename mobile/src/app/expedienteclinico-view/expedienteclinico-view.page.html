@@ -14,11 +14,17 @@
   
   <ion-card *ngIf="expediente as detalle">
     <ion-card-header>
-      <ion-card-title>{{ detalle.idpaciente }}</ion-card-title>
-      <ion-card-subtitle>Motivo # {{ detalle.enfermedades }}</ion-card-subtitle>
-      <ion-card-subtitle>Observaciones # {{ detalle.observaciones }}</ion-card-subtitle>
-      <ion-card-subtitle>Apertura # {{ detalle.apertura }}</ion-card-subtitle>
-    </ion-card-header>
+      <!-- Muestra el Nombre y Apellidos del paciente si existen, o su ID de respaldo -->
+      <ion-card-title *ngIf="detalle.pacienteDetalle; else soloId">
+        {{ detalle.pacienteDetalle.nombre }} {{ detalle.pacienteDetalle.paterno }} {{ detalle.pacienteDetalle.materno }}
+      </ion-card-title>
+      <ng-template #soloId>
+        <ion-card-title>Paciente # {{ detalle.idpaciente }}</ion-card-title>
+      </ng-template>
 
+      <ion-card-subtitle>Enfermedades: {{ detalle.enfermedades }}</ion-card-subtitle>
+      <ion-card-subtitle>Observaciones: {{ detalle.observaciones }}</ion-card-subtitle>
+      <ion-card-subtitle>Fecha de Apertura: {{ detalle.apertura }}</ion-card-subtitle>
+    </ion-card-header>
   </ion-card>
 </ion-content>

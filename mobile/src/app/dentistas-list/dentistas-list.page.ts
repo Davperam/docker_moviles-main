@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
-
+import { Component } from '@angular/core';
 import { ModalController, AlertController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { DentistasService } from '../services/dentistas';
 import { DentistasFormPage } from '../dentistas-form/dentistas-form.page';
 
 interface Dentista {
@@ -33,8 +32,9 @@ export class DentistasListPage {
   dentistas: Dentista[] = [];
 
   constructor(
-     private modalController: ModalController,
-     private alertController: AlertController
+    private modalController: ModalController,
+    private alertController: AlertController,
+    private dentistasService: DentistasService
   ) { }
 
   ionViewWillEnter(): void {
@@ -43,18 +43,9 @@ export class DentistasListPage {
 
   async cargarDentistas(): Promise<void> {
     try {
-      const response = await axios.get<{ data: Dentista[] }>(
-        `${environment.apiUrl}/items/dentista`,
-        {
-        params: {
-          limit: this.porPagina,
-          page: this.paginaActual,
-          sort: 'iddentista',
-          ...this.parametrosBusqueda()
-          }
-        }
+      this.dentistas = await firstValueFrom(
+        this.dentistasService.listado(this.paginaActual, this.porPagina, this.busqueda)
       );
-      this.dentistas = response.data.data; 
     } catch (error) {
       console.error('Error al cargar los dentistas:', error);
     }
@@ -72,139 +63,107 @@ export class DentistasListPage {
     const { data } = await modal.onDidDismiss();
 
     if (data?.guardado) {
-      await this.cargarDentistas();
+      await this.cargarDatos();
     }
   }
 
   async editarDentista(id: number): Promise<void> {
-  const modal = await this.modalController.create({
-    component: DentistasFormPage,
-    componentProps: {
-      id: id
-    },
-    breakpoints: [0, 0.5, 0.95],
-    initialBreakpoint: 0.95
-  });
+    const modal = await this.modalController.create({
+      component: DentistasFormPage,
+      componentProps: { id: id },
+      breakpoints: [0, 0.5, 0.95],
+      initialBreakpoint: 0.95
+    });
 
-  await modal.present();
+    await modal.present();
 
-  const { data } = await modal.onDidDismiss();
+    const { data } = await modal.onDidDismiss();
 
-  if (data?.guardado) {
+    if (data?.guardado) {
+      await this.cargarDatos();
+    }
+  }
+
+  async confirmarEliminar(id: number, nombre: string): Promise<void> {
+    const alerta = await this.alertController.create({
+      header: 'Eliminar dentista',
+      message: `¿Estás seguro de eliminar el dentista "${nombre}"?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => {
+            void this.eliminarDentista(id);
+          }
+        }
+      ]
+    });
+
+    await alerta.present();
+  }
+
+  async eliminarDentista(id: number): Promise<void> {
+    try {
+      await firstValueFrom(this.dentistasService.eliminar(id));
+
+      const alerta = await this.alertController.create({
+        header: 'Dentista eliminado',
+        message: 'El dentista fue eliminado correctamente.',
+        buttons: ['Aceptar']
+      });
+
+      await alerta.present();
+      await alerta.onDidDismiss();
+
+      await this.cargarDatos();
+    } catch (error) {
+      console.error('Error al eliminar el dentista:', error);
+
+      const alerta = await this.alertController.create({
+        header: 'Error',
+        message: 'No fue posible eliminar el dentista. Revisa la conexión, los permisos de eliminación en Directus y las relaciones del registro.',
+        buttons: ['Aceptar']
+      });
+
+      await alerta.present();
+    }
+  }
+
+  async cargarTotal(): Promise<void> {
+    try {
+      this.total = await firstValueFrom(this.dentistasService.total(this.busqueda));
+    } catch (error) {
+      console.error('Error al obtener el total de dentistas:', error);
+      this.total = 0;
+    }
+  }
+
+  private ajustarPaginaActual(): void {
+    const totalPaginas = Math.ceil(this.total / this.porPagina);
+
+    if (totalPaginas === 0) {
+      this.paginaActual = 1;
+      return;
+    }
+
+    if (this.paginaActual > totalPaginas) {
+      this.paginaActual = totalPaginas;
+    }
+  }
+
+  async cargarDatos(): Promise<void> {
+    await this.cargarTotal();
+    this.ajustarPaginaActual();
     await this.cargarDentistas();
   }
-}
 
-async confirmarEliminar(id: number, nombre: string): Promise<void> {
-  const alerta = await this.alertController.create({
-    header: 'Eliminar dentista',
-    message: `¿Estás seguro de eliminar el dentista "${nombre}"?`,
-    buttons: [
-      {
-        text: 'Cancelar',
-        role: 'cancel'
-      },
-      {
-        text: 'Eliminar',
-        role: 'destructive',
-        handler: () => {
-          void this.eliminarDentista(id);
-        }
-      }
-    ]
-  });
-
-  await alerta.present();
-}
-async eliminarDentista(id: number): Promise<void> {
-  try {
-    await axios.delete(
-      `${environment.apiUrl}/items/dentista/${id}`
-    );
-
-    const alerta = await this.alertController.create({
-      header: 'Dentista eliminado',
-      message: 'El dentista fue eliminado correctamente.',
-      buttons: ['Aceptar']
-    });
-
-    await alerta.present();
-    await alerta.onDidDismiss();
-
-    await this.cargarDatos();
-  } catch (error) {
-    console.error('Error al eliminar el dentista:', error);
-
-    const alerta = await this.alertController.create({
-      header: 'Error',
-      message: 'No fue posible eliminar el dentista. Revisa la conexión, los permisos de eliminación en Directus y las relaciones del registro.',
-      buttons: ['Aceptar']
-    });
-
-    await alerta.present();
-  }
-}
-
-async cargarTotal(): Promise<void> {
-  try {
-    const response = await axios.get<{ data: { count: number | string }[] }>(
-      `${environment.apiUrl}/items/dentista?aggregate[count]=*`,
-      { params: this.parametrosBusqueda() }
-    );
-
-    this.total = Number(
-      response.data.data[0]?.count ?? 0
-    );
-
-  } catch (error) {
-    console.error(
-      'Error al obtener el total de dentistas:',
-      error
-    );
-
-    this.total = 0;
-  }
-}
-private ajustarPaginaActual(): void {
-  const totalPaginas = Math.ceil(
-    this.total / this.porPagina
-  );
-
-  if (totalPaginas === 0) {
-    this.paginaActual = 1;
-    return;
-  }
-
-  if (this.paginaActual > totalPaginas) {
-    this.paginaActual = totalPaginas;
-  }
-}
-
-async cargarDatos(): Promise<void> {
-  await this.cargarTotal();
-  this.ajustarPaginaActual();
-  await this.cargarDentistas();
-}
-async cambiarPagina(
-  pagina: number
-): Promise<void> {
-  this.paginaActual = pagina;
-  await this.cargarDentistas();
-}
-
-/* Busqueda */
-
-  private parametrosBusqueda(): Record<string, string> {
-    const texto = this.busqueda.trim();
-    return texto ? {
-      filter: JSON.stringify({
-        _or: [
-          { nombre: { _icontains: texto } },
-          { paterno: { _icontains: texto } },
-          { materno: { _icontains: texto } },
-        ]
-      })
-    } : {};
+  async cambiarPagina(pagina: number): Promise<void> {
+    this.paginaActual = pagina;
+    await this.cargarDentistas();
   }
 
   async handleInput(event: CustomEvent<{ value?: string | null }>): Promise<void> {
@@ -212,5 +171,4 @@ async cambiarPagina(
     this.paginaActual = 1;
     await this.cargarDatos();
   }
-
 }

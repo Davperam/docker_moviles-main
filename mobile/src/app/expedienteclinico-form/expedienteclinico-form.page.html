@@ -1,32 +1,62 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button fill="solid" (click)="cerrarModal()">
+      <ion-button fill="solid" (click)="cerrarModal()" [disabled]="guardando || cargando">
         Cancelar
       </ion-button>
     </ion-buttons>
-    <ion-title>Nuevo expediente clinico</ion-title>
+    <ion-title>
+      {{ esEdicion ? 'Editar expediente clínico' : 'Nuevo expediente clínico' }}
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form *ngIf="expedienteclinicoForm" [formGroup]="expedienteclinicoForm" (ngSubmit)="guardarExpediente()">
+
+  <!-- Spinner de carga -->
+  <div *ngIf="cargando" class="ion-text-center ion-padding">
+    <ion-spinner></ion-spinner>
+    <p>Cargando expediente clínico...</p>
+  </div>
+
+  <form *ngIf="expedienteclinicoForm && !cargando" [formGroup]="expedienteclinicoForm" (ngSubmit)="guardarExpediente()">
     <ion-list>
+
+      <!-- Selector de Paciente (Muestra Nombre Completo, Guarda el ID) -->
       <ion-item>
-        <ion-input label="Enfermedades" labelPlacement="stacked" type="text" formControlName="enfermedades" maxlength="150"></ion-input>
+        <ion-select 
+          label="Paciente" labelPlacement="stacked" formControlName="idpaciente" placeholder="Seleccione un paciente...">
+          <ion-select-option 
+            *ngFor="let p of pacientes" 
+            [value]="p.id || p.idpaciente">
+            {{ p.nombre }} {{ p.paterno }} {{ p.materno }}
+          </ion-select-option>
+        </ion-select>
       </ion-item>
-      <ion-note color="danger" *ngIf="getError('nombre') as error">
+      <ion-note color="danger" *ngIf="getError('idpaciente') as error">
         {{ error }}
       </ion-note>
 
+      <!-- Enfermedades -->
       <ion-item>
-        <ion-textarea label="Observaciones" labelPlacement="stacked" formControlName="observaciones" autoGrow="true"></ion-textarea>
+        <ion-input label="Enfermedades" labelPlacement="stacked" type="text" formControlName="enfermedades" maxlength="150" placeholder="Ej. Hipertensión, Diabetes"></ion-input>
       </ion-item>
+      <ion-note color="danger" *ngIf="getError('enfermedades') as error">
+        {{ error }}
+      </ion-note>
+
+      <!-- Observaciones -->
+      <ion-item>
+        <ion-textarea label="Observaciones" labelPlacement="stacked" formControlName="observaciones" autoGrow="true" maxlength="150" placeholder="Notas médicas adicionales..."></ion-textarea>
+      </ion-item>
+      <ion-note color="danger" *ngIf="getError('observaciones') as error">
+        {{ error }}
+      </ion-note>
 
     </ion-list>
 
-    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando">
-      {{ guardando ? 'Guardando...' : 'Guardar' }}
+    <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando || cargando">
+      {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Guardar') }}
     </ion-button>
   </form>
 </ion-content>

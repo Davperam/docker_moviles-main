@@ -11,6 +11,14 @@
       <ion-button slot="end" color="primary" [routerLink]="['/expedienteclinico-view', expediente.idexpediente]">
         <ion-icon name="eye-outline"></ion-icon>
       </ion-button>
+      <!-- Actualizar -->
+       <ion-button fill="solid" color="warning" (click)="editarExpedienteclinico(expediente.idexpediente)" aria-label="Editar producto">
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
+      </ion-button>
+      <!-- Eliminar -->
+       <ion-button fill="solid" color="danger" (click)="confirmarEliminar(expediente.idexpediente)" aria-label="Eliminar expediente clinico">
+        <ion-icon slot="icon-only" name="trash"></ion-icon>
+      </ion-button>
     </ion-item>
   </ion-list>
 

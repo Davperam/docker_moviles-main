@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { DentistasService } from '../services/dentistas';
 
 interface Dentista {
   iddentista: number;
@@ -28,12 +28,14 @@ export class DentistasViewPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private loading: LoadingController
+    private loading: LoadingController,
+    private dentistasService: DentistasService
   ) { }
 
   ngOnInit() {
     this.cargarDentista();
   }
+
   async cargarDentista(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
     
@@ -53,16 +55,12 @@ export class DentistasViewPage implements OnInit {
     await loading.present();
 
     try {
-      const response = await axios.get<{ data: Dentista }>(
-        `${environment.apiUrl}/items/dentista/${encodeURIComponent(id)}`
-      );
-      this.dentista = response.data.data;
+      this.dentista = await firstValueFrom(this.dentistasService.detalle(Number(id)));
     } catch (error) {
       console.error('Error al cargar el dentista:', error);
       this.mensajeError = 'Ocurrió un error al cargar el dentista.';
     } finally {
-      loading.dismiss();
+      await loading.dismiss();
     }
   }
-
 }

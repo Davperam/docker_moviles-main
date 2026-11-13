@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
-import { ModalController, AlertController } from '@ionic/angular';
+import { Component } from '@angular/core';
+import { AlertController, ModalController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
+import { CitasService } from '../services/citas';
 import { CitasFormPage } from '../citas-form/citas-form.page';
 
 interface Cita {
@@ -23,193 +23,153 @@ interface Cita {
   standalone: false,
 })
 export class CitasListPage {
+  busqueda: string = '';
   total: number = 0;
   paginaActual: number = 1;
   porPagina: number = 8;
 
   titulo: string = 'Citas';
 
-  citas: Cita[] = [];
-
   constructor(
+    private alertController: AlertController,
     private modalController: ModalController,
-    private alertController: AlertController
-  ) { }
+    private citasService: CitasService
+  ) {}
+
+  citas: Cita[] = [];
 
   ionViewWillEnter(): void {
     void this.cargarDatos();
   }
 
-  async cargarCita(): Promise<void> {
+  async cargarCitas(): Promise<void> {
     try {
-      const response = await axios.get<{ data: Cita[] }>(
-        `${environment.apiUrl}/items/cita`,
-        {
-        params: {
-          limit: this.porPagina,
-          page: this.paginaActual,
-          sort: 'idcita',
-        }
-      }
+      this.citas = await firstValueFrom(
+        this.citasService.listado(this.paginaActual, this.porPagina, this.busqueda)
       );
-      this.citas = response.data.data; 
     } catch (error) {
-      console.error('Error al cargar las citas:', error);
+      console.error('Error al cargar citas:', error);
     }
   }
 
   async nuevaCita(): Promise<void> {
-  const modal = await this.modalController.create({
-    component: CitasFormPage,
-    breakpoints: [0, 0.5, 0.95],
-    initialBreakpoint: 0.95
-  });
+    const modal = await this.modalController.create({
+      component: CitasFormPage,
+      breakpoints: [0, 0.5, 0.95],
+      initialBreakpoint: 0.95
+    });
 
+    await modal.present();
 
-  await modal.present();
+    const { data } = await modal.onDidDismiss();
 
-  const { data } = await modal.onDidDismiss();
-
-  if (data?.guardado) {
-    await this.cargarCita();
+    if (data?.guardado) {
+      await this.cargarDatos();
+    }
   }
-}
 
-async editarCita(id: number): Promise<void> {
-  const modal = await this.modalController.create({
-    component: CitasFormPage,
-    componentProps: {
-      id: id
-    },
-    breakpoints: [0, 0.5, 0.95],
-    initialBreakpoint: 0.95
-  });
+  async editarCita(id: number): Promise<void> {
+    const modal = await this.modalController.create({
+      component: CitasFormPage,
+      componentProps: { id: id },
+      breakpoints: [0, 0.5, 0.95],
+      initialBreakpoint: 0.95
+    });
 
-  await modal.present();
+    await modal.present();
 
-  const { data } = await modal.onDidDismiss();
+    const { data } = await modal.onDidDismiss();
 
-  if (data?.guardado) {
-    await this.cargarCita();
+    if (data?.guardado) {
+      await this.cargarDatos();
+    }
   }
-}
 
-/* Eliminar cita */
-async confirmarEliminar(id: number, nombre: string): Promise<void> {
-  const alerta = await this.alertController.create({
-    header: 'Eliminar cita',
-    message: `¿Estás seguro de eliminar la cita "${nombre}"?`,
-    buttons: [
-      {
-        text: 'Cancelar',
-        role: 'cancel'
-      },
-      {
-        text: 'Eliminar',
-        role: 'destructive',
-        handler: () => {
-          void this.eliminarCita(id);
-        }
-      }
-    ]
-  });
-
-  await alerta.present();
-}
-async eliminarCita(id: number): Promise<void> {
-  try {
-    // 1. Primero buscamos y eliminamos los registros dependientes en `citadetalle`
-    try {
-      const responseDetalle = await axios.get(
-        `${environment.apiUrl}/items/citadetalle?filter[idcita][_eq]=${id}`
-      );
-      const detalles = responseDetalle.data.data;
-
-      if (detalles && detalles.length > 0) {
-        for (const detalle of detalles) {
-          // Usamos el nombre real de la llave primaria de tu diagrama: iddetallecita
-          const idDetalle = detalle.iddetallecita || detalle.iddetalle || detalle.id;
-          
-          if (idDetalle) {
-            await axios.delete(`${environment.apiUrl}/items/citadetalle/${idDetalle}`);
+  async confirmarEliminar(id: number, nombre: string): Promise<void> {
+    const alerta = await this.alertController.create({
+      header: 'Eliminar cita',
+      message: `¿Estás seguro de eliminar la cita "${nombre}"?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => {
+            void this.eliminarCita(id);
           }
         }
-      }
-    } catch (errDetalle) {
-      console.warn('No se encontraron detalles previos o ya fueron eliminados:', errDetalle);
+      ]
+    });
+
+    await alerta.present();
+  }
+
+  async eliminarCita(id: number): Promise<void> {
+    try {
+      await firstValueFrom(this.citasService.eliminar(id));
+
+      const alerta = await this.alertController.create({
+        header: 'Cita eliminada',
+        message: 'La cita fue eliminada correctamente.',
+        buttons: ['Aceptar']
+      });
+
+      await alerta.present();
+      await alerta.onDidDismiss();
+
+      await this.cargarDatos();
+    } catch (error) {
+      console.error('Error al eliminar la cita:', error);
+
+      const alerta = await this.alertController.create({
+        header: 'Error',
+        message: 'No fue posible eliminar la cita. Revisa la conexión, los permisos de eliminación en Directus y las relaciones del registro.',
+        buttons: ['Aceptar']
+      });
+
+      await alerta.present();
+    }
+  }
+
+  async cargarTotal(): Promise<void> {
+    try {
+      this.total = await firstValueFrom(this.citasService.total(this.busqueda));
+    } catch (error) {
+      this.total = 0;
+      console.error('Error al contar citas:', error);
+    }
+  }
+
+  private ajustarPaginaActual(): void {
+    const totalPaginas = Math.ceil(this.total / this.porPagina);
+
+    if (totalPaginas === 0) {
+      this.paginaActual = 1;
+      return;
     }
 
-    // 2. Ahora procedemos a eliminar la cita principal
-    await axios.delete(
-      `${environment.apiUrl}/items/cita/${id}`
-    );
-
-    const alerta = await this.alertController.create({
-      header: 'Cita eliminada',
-      message: 'La cita fue eliminada correctamente.',
-      buttons: ['Aceptar']
-    });
-
-    await alerta.present();
-    await alerta.onDidDismiss();
-
-    await this.cargarCita();
-  } catch (error) {
-    console.error('Error al eliminar la cita:', error);
-
-    const alerta = await this.alertController.create({
-      header: 'Error',
-      message: 'No fue posible eliminar la cita. Revisa la conexión, los permisos de eliminación en Directus y las relaciones del registro.',
-      buttons: ['Aceptar']
-    });
-
-    await alerta.present();
+    if (this.paginaActual > totalPaginas) {
+      this.paginaActual = totalPaginas;
+    }
   }
-}
 
-async cargarTotal(): Promise<void> {
-  try {
-    const response = await axios.get<{ data: { count: number | string }[] }>(
-      `${environment.apiUrl}/items/cita?aggregate[count]=*`
-    );
-
-    this.total = Number(
-      response.data.data[0]?.count ?? 0
-    );
-
-  } catch (error) {
-    console.error(
-      'Error al obtener el total de citas:',
-      error
-    );
-
-    this.total = 0;
+  async cargarDatos(): Promise<void> {
+    await this.cargarTotal();
+    this.ajustarPaginaActual();
+    await this.cargarCitas();
   }
-}
-private ajustarPaginaActual(): void {
-  const totalPaginas = Math.ceil(
-    this.total / this.porPagina
-  );
 
-  if (totalPaginas === 0) {
+  async cambiarPagina(pagina: number): Promise<void> {
+    this.paginaActual = pagina;
+    await this.cargarCitas();
+  }
+
+  async handleInput(event: CustomEvent<{ value?: string | null }>): Promise<void> {
+    this.busqueda = event.detail.value ?? '';
     this.paginaActual = 1;
-    return;
+    await this.cargarDatos();
   }
-
-  if (this.paginaActual > totalPaginas) {
-    this.paginaActual = totalPaginas;
-  }
-}
-async cargarDatos(): Promise<void> {
-  await this.cargarTotal();
-  this.ajustarPaginaActual();
-  await this.cargarCita();
-}
-async cambiarPagina(
-  pagina: number
-): Promise<void> {
-  this.paginaActual = pagina;
-  await this.cargarCita();
-}
-
 }

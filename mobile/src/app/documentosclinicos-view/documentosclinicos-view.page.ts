@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { DocumentosclinicosService } from '../services/documentosclinicos';
 
 interface DocumentoClinico {
   iddocumento: number;
@@ -27,12 +27,14 @@ export class DocumentosclinicosViewPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private documentosService: DocumentosclinicosService
   ) { }
 
   ngOnInit() {
     this.cargarDocumento();
   }
+
   async cargarDocumento(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
 
@@ -52,16 +54,14 @@ export class DocumentosclinicosViewPage implements OnInit {
     await loading.present();
 
     try {
-      const response = await axios.get<{ data: DocumentoClinico }>(
-        `${environment.apiUrl}/items/documentoclinico/${encodeURIComponent(id)}`
+      this.documento = await firstValueFrom(
+        this.documentosService.detalle(Number(id))
       );
-      this.documento = response.data.data;
     } catch (error) {
       console.error('Error al cargar el documento clínico:', error);
       this.mensajeError = 'Ocurrió un error al cargar el documento clínico.';
     } finally {
-      loading.dismiss();
+      await loading.dismiss();
     }
   }
-
 }
