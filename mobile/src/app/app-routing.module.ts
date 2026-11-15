@@ -218,6 +218,30 @@ const routes: Routes = [
     path: 'especialidad-form',
     loadChildren: () => import('./especialidad-form/especialidad-form.module').then( m => m.EspecialidadFormPageModule)
   },
+  {
+    path: 'paciente-citas/:id',
+    loadChildren: () => import('./paciente-citas/paciente-citas.module').then( m => m.PacienteCitasPageModule)
+  },
+  {
+    path: 'paciente-expediente/:id',
+    loadChildren: () => import('./paciente-expediente/paciente-expediente.module').then( m => m.PacienteExpedientePageModule)
+  },
+  {
+    path: 'paciente-odontogramas/:id',
+    loadChildren: () => import('./paciente-odontogramas/paciente-odontogramas.module').then( m => m.PacienteOdontogramasPageModule)
+  },
+  {
+    path: 'paciente-alergias/:id',
+    loadChildren: () => import('./paciente-alergias/paciente-alergias.module').then( m => m.PacienteAlergiasPageModule)
+  },
+  {
+    path: 'paciente-notaclinica/:id',
+    loadChildren: () => import('./paciente-notaclinica/paciente-notaclinica.module').then( m => m.PacienteNotaclinicaPageModule)
+  },
+  {
+    path: 'paciente-medicamentos/:id',
+    loadChildren: () => import('./paciente-medicamentos/paciente-medicamentos.module').then( m => m.PacienteMedicamentosPageModule)
+  },
 
 
 ];

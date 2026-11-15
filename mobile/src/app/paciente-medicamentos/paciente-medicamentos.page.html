@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <!-- Regresa al detalle del paciente -->
+      <ion-back-button [defaultHref]="'/pacientes-view/' + idPaciente"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Medicamentos del Paciente</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Cabecera del Paciente -->
+  <ion-card class="paciente-header-card" *ngIf="paciente">
+    <ion-card-content>
+      <div class="paciente-header-content">
+        <ion-icon name="person-circle-outline" class="paciente-avatar-icon"></ion-icon>
+        <div>
+          <h2>{{ paciente.nombre }} {{ paciente.paterno }} {{ paciente.materno }}</h2>
+          <p>ID Paciente: #{{ paciente.idpaciente }}</p>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-text color="danger" *ngIf="mensajeError">
+    <p class="ion-padding">{{ mensajeError }}</p>
+  </ion-text>
+
+  <div class="med-info-bar" *ngIf="!cargando && medicamentos.length > 0">
+    <ion-badge color="success">{{ medicamentos.length }} Medicamentos Asignados</ion-badge>
+  </div>
+
+  <!-- Estado vacío -->
+  <ion-card *ngIf="!cargando && medicamentos.length === 0 && !mensajeError" class="empty-card">
+    <ion-card-content class="ion-text-center">
+      <ion-icon name="medkit-outline" class="empty-icon"></ion-icon>
+      <h3>Sin medicamentos asignados</h3>
+      <p>No se encontraron medicamentos registrados en el expediente de este paciente.</p>
+      <ion-button fill="outline" color="primary" [routerLink]="['/pacientes-view', idPaciente]">
+        <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+        Volver al detalle
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Lista de medicamentos -->
+  <div *ngIf="!cargando && medicamentos.length > 0">
+    <ion-card *ngFor="let item of medicamentos" class="med-card">
+      <ion-card-header>
+        <div class="med-top-bar">
+          <div class="med-tag">
+            <ion-icon name="flask-outline"></ion-icon>
+            <span class="med-nombre">{{ item.nombreMedicamento }}</span>
+          </div>
+          <ion-badge color="success">Recetado</ion-badge>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <p class="med-desc">{{ item.descripcionMedicamento }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

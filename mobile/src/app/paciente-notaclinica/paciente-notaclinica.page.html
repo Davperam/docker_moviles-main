@@ -1,0 +1,70 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <!-- Regresa al detalle del paciente -->
+      <ion-back-button [defaultHref]="'/pacientes-view/' + idPaciente"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Notas Clínicas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Cabecera del Paciente -->
+  <ion-card class="paciente-header-card" *ngIf="paciente">
+    <ion-card-content>
+      <div class="paciente-header-content">
+        <ion-icon name="person-circle-outline" class="paciente-avatar-icon"></ion-icon>
+        <div>
+          <h2>{{ paciente.nombre }} {{ paciente.paterno }} {{ paciente.materno }}</h2>
+          <p>ID Paciente: #{{ paciente.idpaciente }}</p>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-text color="danger" *ngIf="mensajeError">
+    <p class="ion-padding">{{ mensajeError }}</p>
+  </ion-text>
+
+  <div class="notas-info-bar" *ngIf="!cargando && notas.length > 0">
+    <ion-badge color="tertiary">{{ notas.length }} Notas Registradas</ion-badge>
+    <span class="orden-badge">
+      <ion-icon name="arrow-down-outline"></ion-icon> De la más nueva a la más antigua
+    </span>
+  </div>
+
+  <!-- Estado vacío -->
+  <ion-card *ngIf="!cargando && notas.length === 0 && !mensajeError" class="empty-card">
+    <ion-card-content class="ion-text-center">
+      <ion-icon name="reader-outline" class="empty-icon"></ion-icon>
+      <h3>Sin notas clínicas</h3>
+      <p>No se encontraron notas clínicas registradas en el expediente de este paciente.</p>
+      <ion-button fill="outline" color="primary" [routerLink]="['/pacientes-view', idPaciente]">
+        <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+        Volver al detalle
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Lista de notas clínicas -->
+  <div *ngIf="!cargando && notas.length > 0">
+    <ion-card *ngFor="let item of notas" class="nota-card">
+      <ion-card-header>
+        <div class="nota-top-bar">
+          <div class="nota-fecha-tag">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <span>{{ item.fecha || 'Sin fecha' }}</span>
+          </div>
+          <ion-badge color="medium">Nota #{{ item.idnota }}</ion-badge>
+        </div>
+        <ion-card-title class="nota-desc">{{ item.descripcion }}</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="nota-obs" *ngIf="item.observaciones">
+          <p><strong>Observaciones:</strong> {{ item.observaciones }}</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

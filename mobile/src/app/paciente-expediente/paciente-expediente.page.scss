@@ -1,0 +1,106 @@
+.paciente-header-card {
+  margin: 0 0 16px 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fa 100%);
+  border: 1px solid #d2e3fc;
+
+  .paciente-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .paciente-avatar-icon {
+      font-size: 40px;
+      color: var(--ion-color-primary);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+    }
+
+    p {
+      margin: 2px 0 0 0;
+      font-size: 0.8rem;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+.expediente-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  border-left: 5px solid var(--ion-color-primary);
+  margin-bottom: 16px;
+
+  .expediente-badge-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    .apertura-fecha {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  .exp-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .exp-list {
+    background: transparent;
+    padding: 0;
+
+    .exp-item {
+      --background: #f8fafd;
+      --padding-start: 12px;
+      --inner-padding-end: 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+
+      h3 {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--ion-color-dark);
+        margin-bottom: 4px;
+      }
+
+      p {
+        font-size: 0.88rem;
+        color: #4a5568;
+      }
+    }
+  }
+}
+
+.empty-card {
+  margin-top: 30px;
+  border-radius: 16px;
+  padding: 20px 10px;
+
+  .empty-icon {
+    font-size: 64px;
+    color: var(--ion-color-medium);
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0 0 16px 0;
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+  }
+}

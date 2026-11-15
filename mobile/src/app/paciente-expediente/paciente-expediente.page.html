@@ -1,0 +1,77 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <!-- Regresa al detalle del paciente -->
+      <ion-back-button [defaultHref]="'/pacientes-view/' + idPaciente"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Expediente Clínico</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Cabecera del Paciente -->
+  <ion-card class="paciente-header-card" *ngIf="paciente">
+    <ion-card-content>
+      <div class="paciente-header-content">
+        <ion-icon name="person-circle-outline" class="paciente-avatar-icon"></ion-icon>
+        <div>
+          <h2>{{ paciente.nombre }} {{ paciente.paterno }} {{ paciente.materno }}</h2>
+          <p>ID Paciente: #{{ paciente.idpaciente }} | Tipo Sangre: {{ paciente.tiposangre || 'N/A' }}</p>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-text color="danger" *ngIf="mensajeError">
+    <p class="ion-padding">{{ mensajeError }}</p>
+  </ion-text>
+
+  <!-- Estado vacío si el paciente aún no tiene expediente -->
+  <ion-card *ngIf="!cargando && expedientes.length === 0 && !mensajeError" class="empty-card">
+    <ion-card-content class="ion-text-center">
+      <ion-icon name="folder-open-outline" class="empty-icon"></ion-icon>
+      <h3>Sin expediente clínico</h3>
+      <p>Este paciente aún no tiene un expediente clínico aperturado.</p>
+      <ion-button fill="outline" color="primary" [routerLink]="['/pacientes-view', idPaciente]">
+        <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+        Volver al detalle
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Detalle del Expediente Clínico -->
+  <div *ngIf="!cargando && expedientes.length > 0">
+    <ion-card *ngFor="let exp of expedientes" class="expediente-card">
+      <ion-card-header>
+        <div class="expediente-badge-bar">
+          <ion-badge color="primary">Expediente #{{ exp.idexpediente }}</ion-badge>
+          <div class="apertura-fecha">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <span>Apertura: {{ exp.apertura || 'Fecha no registrada' }}</span>
+          </div>
+        </div>
+        <ion-card-title class="exp-title">Información Clínica</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-list lines="none" class="exp-list">
+          <ion-item class="exp-item">
+            <ion-icon name="fitness-outline" slot="start" color="danger"></ion-icon>
+            <ion-label class="ion-text-wrap">
+              <h3>Enfermedades / Padecimientos</h3>
+              <p>{{ exp.enfermedades || 'Sin padecimientos registrados' }}</p>
+            </ion-label>
+          </ion-item>
+
+          <ion-item class="exp-item">
+            <ion-icon name="document-text-outline" slot="start" color="secondary"></ion-icon>
+            <ion-label class="ion-text-wrap">
+              <h3>Observaciones Generales</h3>
+              <p>{{ exp.observaciones || 'Sin observaciones registradas' }}</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

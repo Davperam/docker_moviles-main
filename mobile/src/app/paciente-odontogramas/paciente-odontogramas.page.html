@@ -1,0 +1,72 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <!-- Regresa al detalle del paciente -->
+      <ion-back-button [defaultHref]="'/pacientes-view/' + idPaciente"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Odontogramas del Paciente</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Cabecera del Paciente -->
+  <ion-card class="paciente-header-card" *ngIf="paciente">
+    <ion-card-content>
+      <div class="paciente-header-content">
+        <ion-icon name="person-circle-outline" class="paciente-avatar-icon"></ion-icon>
+        <div>
+          <h2>{{ paciente.nombre }} {{ paciente.paterno }} {{ paciente.materno }}</h2>
+          <p>ID Paciente: #{{ paciente.idpaciente }}</p>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-text color="danger" *ngIf="mensajeError">
+    <p class="ion-padding">{{ mensajeError }}</p>
+  </ion-text>
+
+  <div class="odon-info-bar" *ngIf="!cargando && odontogramas.length > 0">
+    <ion-badge color="warning">{{ odontogramas.length }} Piezas Registradas</ion-badge>
+  </div>
+
+  <!-- Estado vacío -->
+  <ion-card *ngIf="!cargando && odontogramas.length === 0 && !mensajeError" class="empty-card">
+    <ion-card-content class="ion-text-center">
+      <ion-icon name="grid-outline" class="empty-icon"></ion-icon>
+      <h3>Sin odontogramas registrados</h3>
+      <p>No se encontraron registros de piezas dentales para este paciente.</p>
+      <ion-button fill="outline" color="primary" [routerLink]="['/pacientes-view', idPaciente]">
+        <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+        Volver al detalle
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Lista de odontogramas -->
+  <div *ngIf="!cargando && odontogramas.length > 0">
+    <ion-card *ngFor="let item of odontogramas" class="odon-card">
+      <ion-card-header>
+        <div class="odon-top-bar">
+          <div class="diente-badge">
+            <ion-icon name="medical-outline"></ion-icon>
+            <span>Diente #{{ item.diente }}</span>
+          </div>
+          <ion-badge [color]="getColorEstado(item.estado)">
+            {{ item.estado }}
+          </ion-badge>
+        </div>
+        <ion-card-title class="odon-tratamiento">{{ item.tratamiento }}</ion-card-title>
+        <ion-card-subtitle *ngIf="item.fecharegistro">
+          <ion-icon name="calendar-outline"></ion-icon> Registro: {{ item.fecharegistro }}
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="odon-obs" *ngIf="item.observaciones">
+          <p><strong>Observaciones:</strong> {{ item.observaciones }}</p>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

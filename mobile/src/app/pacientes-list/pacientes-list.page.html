@@ -6,6 +6,7 @@
 <p class="ion-padding" *ngIf="total === 0">No se encontró el paciente.</p>
   <ion-list>
     <ion-item *ngFor="let paciente of pacientes">
+      <ion-icon name="person-circle-outline" class="perfil-avatar-icon"></ion-icon>
       <ion-label class="ion-text-wrap">
         <h2>{{ paciente.nombre }} {{ paciente.paterno }} {{ paciente.materno }}</h2>
         <p>{{ paciente.nacimiento }}</p>

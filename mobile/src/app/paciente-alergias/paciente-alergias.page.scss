@@ -1,0 +1,95 @@
+.paciente-header-card {
+  margin: 0 0 16px 0;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+
+  .paciente-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .paciente-avatar-icon {
+      font-size: 40px;
+      color: #dc2626;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #991b1b;
+    }
+
+    p {
+      margin: 2px 0 0 0;
+      font-size: 0.8rem;
+      color: #b91c1c;
+    }
+  }
+}
+
+.alergia-info-bar {
+  margin: 8px 4px 12px 4px;
+}
+
+.alergia-card {
+  margin: 0 0 14px 0;
+  border-radius: 14px;
+  border-left: 5px solid var(--ion-color-danger);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  .alergia-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .alergia-tag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      ion-icon {
+        font-size: 22px;
+        color: var(--ion-color-danger);
+      }
+
+      .alergia-nombre {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ion-color-dark);
+      }
+    }
+  }
+
+  .alergia-desc {
+    margin: 8px 0 0 0;
+    font-size: 0.9rem;
+    color: #4b5563;
+    line-height: 1.4;
+  }
+}
+
+.empty-card {
+  margin-top: 30px;
+  border-radius: 16px;
+  padding: 20px 10px;
+
+  .empty-icon-safe {
+    font-size: 64px;
+    color: var(--ion-color-success);
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0 0 16px 0;
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+  }
+}

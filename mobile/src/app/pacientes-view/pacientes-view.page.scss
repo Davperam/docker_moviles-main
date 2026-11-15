@@ -1,0 +1,148 @@
+.paciente-perfil-card {
+  margin: 0 0 16px 0;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+
+  .perfil-avatar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+
+    .perfil-avatar-icon {
+      font-size: 54px;
+      color: var(--ion-color-primary);
+    }
+
+    .perfil-nombre {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+      margin-bottom: 4px;
+    }
+  }
+
+  .perfil-datos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+
+    .dato-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.88rem;
+      color: #475569;
+
+      ion-icon {
+        color: var(--ion-color-primary);
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+.modulos-seccion {
+  margin-top: 16px;
+
+  .modulos-titulo {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ion-color-dark);
+    margin: 0 0 4px 4px;
+  }
+
+  .modulos-subtitulo {
+    font-size: 0.85rem;
+    color: var(--ion-color-medium);
+    margin: 0 0 14px 4px;
+  }
+}
+
+.modulo-card {
+  margin: 6px 4px;
+  border-radius: 14px;
+  border: 1px solid #edf2f7;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  ion-card-content {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 14px;
+  }
+}
+
+.modulo-icono-wrapper {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.card-expediente {
+  border-left: 5px solid #3880ff;
+  .modulo-icono-wrapper { background: rgba(56, 128, 255, 0.12); color: #3880ff; }
+}
+
+.card-citas {
+  border-left: 5px solid #2dd36f;
+  .modulo-icono-wrapper { background: rgba(45, 211, 111, 0.15); color: #2dd36f; }
+}
+
+.card-odontogramas {
+  border-left: 5px solid #ffc409;
+  .modulo-icono-wrapper { background: rgba(255, 196, 9, 0.18); color: #d97706; }
+}
+
+.card-alergias {
+  border-left: 5px solid #eb445a;
+  .modulo-icono-wrapper { background: rgba(235, 68, 90, 0.12); color: #eb445a; }
+}
+
+.card-notas {
+  border-left: 5px solid #7044ff;
+  .modulo-icono-wrapper { background: rgba(112, 68, 255, 0.12); color: #7044ff; }
+}
+
+.card-medicamentos {
+  border-left: 5px solid #10b981;
+  .modulo-icono-wrapper { background: rgba(16, 185, 129, 0.14); color: #059669; }
+}
+
+.modulo-texto {
+  flex: 1;
+
+  h3 {
+    margin: 0 0 2px 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--ion-color-dark);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.modulo-chevron {
+  font-size: 20px;
+  color: var(--ion-color-medium);
+  opacity: 0.6;
+}

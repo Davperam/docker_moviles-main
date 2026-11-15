@@ -1,27 +1,155 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/pacientes-list"></ion-back-button>
     </ion-buttons>
-    <ion-title>Descripción del paciente</ion-title>
+    <ion-title>Detalle del Paciente</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="ion-padding">
   <ion-text color="danger" *ngIf="mensajeError">
     <p class="ion-padding">{{ mensajeError }}</p>
   </ion-text>
   
-  <ion-card *ngIf="paciente as detalle">
+  <!-- Tarjeta con datos generales del paciente -->
+  <ion-card *ngIf="paciente as detalle" class="paciente-perfil-card">
     <ion-card-header>
-      <ion-card-title>{{ detalle.nombre }} {{ detalle.paterno }} {{ detalle.materno }}</ion-card-title>
-      <ion-card-subtitle>Nacimiento: {{ detalle.nacimiento }}</ion-card-subtitle>
-      <ion-card-subtitle>Tipo de sangre: {{ detalle.tiposangre }}</ion-card-subtitle>
-      <ion-card-subtitle>Teléfono: {{ detalle.telefono }}</ion-card-subtitle>
-      <ion-card-subtitle>Correo: {{ detalle.correo }}</ion-card-subtitle>
-      <ion-card-subtitle>Dirección: {{ detalle.direccion }}</ion-card-subtitle>
-      <ion-card-subtitle>Registro: {{ detalle.registro }}</ion-card-subtitle>
+      <div class="perfil-avatar-wrapper">
+        <ion-icon name="person-circle-outline" class="perfil-avatar-icon"></ion-icon>
+        <div>
+          <ion-card-title class="perfil-nombre">{{ detalle.nombre }} {{ detalle.paterno }} {{ detalle.materno }}</ion-card-title>
+          <ion-badge color="primary">ID #{{ detalle.idpaciente }}</ion-badge>
+        </div>
+      </div>
+      <div class="perfil-datos-grid">
+        <div class="dato-item">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <span><strong>Nacimiento:</strong> {{ detalle.nacimiento || 'No registrado' }}</span>
+        </div>
+        <div class="dato-item">
+          <ion-icon name="water-outline"></ion-icon>
+          <span><strong>Tipo de sangre:</strong> {{ detalle.tiposangre || 'No registrado' }}</span>
+        </div>
+        <div class="dato-item">
+          <ion-icon name="call-outline"></ion-icon>
+          <span><strong>Teléfono:</strong> {{ detalle.telefono || 'No registrado' }}</span>
+        </div>
+        <div class="dato-item">
+          <ion-icon name="mail-outline"></ion-icon>
+          <span><strong>Correo:</strong> {{ detalle.correo || 'No registrado' }}</span>
+        </div>
+        <div class="dato-item">
+          <ion-icon name="home-outline"></ion-icon>
+          <span><strong>Dirección:</strong> {{ detalle.direccion || 'No registrada' }}</span>
+        </div>
+      </div>
     </ion-card-header>
-
   </ion-card>
+
+  <!-- SECCIÓN DE CARDS CON ICONOS -->
+  <div *ngIf="paciente as detalle" class="modulos-seccion">
+    <h3 class="modulos-titulo">Módulos del Paciente</h3>
+    <p class="modulos-subtitulo">Selecciona una opción para consultar su información:</p>
+
+    <ion-grid class="ion-no-padding">
+      <ion-row>
+        <!-- 1. Expediente Clínico -->
+        <ion-col size="12" size-md="6">
+          <ion-card button [routerLink]="['/paciente-expediente', detalle.idpaciente]" class="modulo-card card-expediente">
+            <ion-card-content>
+              <div class="modulo-icono-wrapper">
+                <ion-icon name="folder-open-outline"></ion-icon>
+              </div>
+              <div class="modulo-texto">
+                <h3>Expediente Clínico</h3>
+                <p>Apertura, enfermedades y observaciones</p>
+              </div>
+              <ion-icon name="chevron-forward-outline" class="modulo-chevron"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- 2. Citas -->
+        <ion-col size="12" size-md="6">
+          <ion-card button [routerLink]="['/paciente-citas', detalle.idpaciente]" class="modulo-card card-citas">
+            <ion-card-content>
+              <div class="modulo-icono-wrapper">
+                <ion-icon name="calendar-outline"></ion-icon>
+              </div>
+              <div class="modulo-texto">
+                <h3>Citas Médicas</h3>
+                <p>De la más nueva a la más antigua</p>
+              </div>
+              <ion-icon name="chevron-forward-outline" class="modulo-chevron"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- 3. Odontogramas -->
+        <ion-col size="12" size-md="6">
+          <ion-card button [routerLink]="['/paciente-odontogramas', detalle.idpaciente]" class="modulo-card card-odontogramas">
+            <ion-card-content>
+              <div class="modulo-icono-wrapper">
+                <ion-icon name="grid-outline"></ion-icon>
+              </div>
+              <div class="modulo-texto">
+                <h3>Odontogramas</h3>
+                <p>Piezas dentales, estado y tratamientos</p>
+              </div>
+              <ion-icon name="chevron-forward-outline" class="modulo-chevron"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- 4. Alergias -->
+        <ion-col size="12" size-md="6">
+          <ion-card button [routerLink]="['/paciente-alergias', detalle.idpaciente]" class="modulo-card card-alergias">
+            <ion-card-content>
+              <div class="modulo-icono-wrapper">
+                <ion-icon name="alert-circle-outline"></ion-icon>
+              </div>
+              <div class="modulo-texto">
+                <h3>Alergias</h3>
+                <p>Alertas y reacciones registradas</p>
+              </div>
+              <ion-icon name="chevron-forward-outline" class="modulo-chevron"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- 5. Notas Clínicas -->
+        <ion-col size="12" size-md="6">
+          <ion-card button [routerLink]="['/paciente-notaclinica', detalle.idpaciente]" class="modulo-card card-notas">
+            <ion-card-content>
+              <div class="modulo-icono-wrapper">
+                <ion-icon name="reader-outline"></ion-icon>
+              </div>
+              <div class="modulo-texto">
+                <h3>Notas Clínicas</h3>
+                <p>Evolución clínica y notas de consulta</p>
+              </div>
+              <ion-icon name="chevron-forward-outline" class="modulo-chevron"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- 6. Medicamentos -->
+        <ion-col size="12" size-md="6">
+          <ion-card button [routerLink]="['/paciente-medicamentos', detalle.idpaciente]" class="modulo-card card-medicamentos">
+            <ion-card-content>
+              <div class="modulo-icono-wrapper">
+                <ion-icon name="medkit-outline"></ion-icon>
+              </div>
+              <div class="modulo-texto">
+                <h3>Medicamentos</h3>
+                <p>Medicamentos asignados en expediente</p>
+              </div>
+              <ion-icon name="chevron-forward-outline" class="modulo-chevron"></ion-icon>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
 </ion-content>
