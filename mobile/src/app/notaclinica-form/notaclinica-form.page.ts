@@ -1,8 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { NotaclinicaService } from '../services/notaclinica';
 
 interface NotaClinicaGuardar {
   idexpediente: number;
@@ -16,14 +16,6 @@ interface ExpedienteClinico {
   [key: string]: any;
 }
 
-interface NotaClinicaDetalle {
-  idnota: number;
-  idexpediente: number;
-  descripcion: string;
-  observaciones: string;
-  fecha: string;
-}
-
 @Component({
   selector: 'app-notaclinica-form',
   templateUrl: './notaclinica-form.page.html',
@@ -31,7 +23,6 @@ interface NotaClinicaDetalle {
   standalone: false,
 })
 export class NotaclinicaFormPage implements OnInit {
-  /* El formulario recibe el id cuando se abre desde el listado y asi sepa cual es el id a editar*/
   @Input() id?: number;
 
   notaForm!: FormGroup;
@@ -55,16 +46,15 @@ export class NotaclinicaFormPage implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private notaclinicaService: NotaclinicaService
   ) {}
 
-  /* Permite saber si el id tiene registro, para identificar si es nuevo o editar nota */
   get esEdicion(): boolean {
     return this.id !== undefined;
   }
 
   async ngOnInit(): Promise<void> {
-    
     this.crearFormulario();
     await this.cargarExpedientes();
 
@@ -84,10 +74,7 @@ export class NotaclinicaFormPage implements OnInit {
 
   async cargarExpedientes(): Promise<void> {
     try {
-      const response = await axios.get<{ data: ExpedienteClinico[] }>(
-        `${environment.apiUrl}/items/expedienteclinico`
-      );
-      this.expedientes = response.data.data;
+      this.expedientes = await firstValueFrom(this.notaclinicaService.expedientes());
     } catch (error) {
       console.error('Error al cargar los expedientes clínicos:', error);
     }
@@ -101,10 +88,7 @@ export class NotaclinicaFormPage implements OnInit {
     this.cargando = true;
 
     try {
-      const response = await axios.get<{ data: NotaClinicaDetalle }>(
-        `${environment.apiUrl}/items/notaclinica/${this.id}`
-      );
-      const data = response.data.data;
+      const data = await firstValueFrom(this.notaclinicaService.detalle(this.id));
       
       this.notaForm.patchValue({
         idexpediente: data.idexpediente,
@@ -141,9 +125,7 @@ export class NotaclinicaFormPage implements OnInit {
   }
 
   async cerrarModal(): Promise<void> {
-    await this.modalController.dismiss({
-      guardado: false
-    });
+    await this.modalController.dismiss({ guardado: false });
   }
 
   async guardarNota(): Promise<void> {
@@ -164,25 +146,9 @@ export class NotaclinicaFormPage implements OnInit {
 
     try {
       if (this.esEdicion && this.id !== undefined) {
-        await axios.patch(
-          `${environment.apiUrl}/items/notaclinica/${this.id}`,
-          nota,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await firstValueFrom(this.notaclinicaService.actualizar(this.id, nota));
       } else {
-        await axios.post(
-          `${environment.apiUrl}/items/notaclinica`,
-          nota,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await firstValueFrom(this.notaclinicaService.crear(nota));
       }
 
       const alerta = await this.alertController.create({
@@ -196,9 +162,7 @@ export class NotaclinicaFormPage implements OnInit {
       await alerta.present();
       await alerta.onDidDismiss();
 
-      await this.modalController.dismiss({
-        guardado: true
-      });
+      await this.modalController.dismiss({ guardado: true });
     } catch (error) {
       console.error(
         this.esEdicion ? 'Error al actualizar la nota clínica:' : 'Error al guardar la nota clínica:',

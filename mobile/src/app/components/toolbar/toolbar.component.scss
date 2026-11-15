@@ -1,0 +1,33 @@
+ion-toolbar {
+  --min-height: 60px; /* Asegura suficiente altura para que el logo luzca nítido */
+}
+
+/* Centrado perfecto del título en Android y iOS sin que lo empuje el logo */
+ion-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none; /* Permite clics en el menú y botones sin interferencias */
+}
+
+/* Contenedor y dimensiones del logo */
+.toolbar-logo-container {
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.toolbar-logo {
+  max-height: 48px; /* Ajusta la altura según la proporción de tu imagen */
+  width: auto;
+  object-fit: contain;
+  display: block;
+}

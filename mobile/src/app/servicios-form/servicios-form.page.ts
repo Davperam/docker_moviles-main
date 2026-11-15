@@ -1,22 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { ServiciosService } from '../services/servicios';
 
 interface ServicioGuardar {
   nombre: string;
   descripcion: string;
   precio: number;
   duracion: number;
-}
-
-interface ServicioDetalle {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  precio: number | string;
-  duracion: number | string;
 }
 
 @Component({
@@ -27,7 +19,6 @@ interface ServicioDetalle {
 })
 export class ServiciosFormPage implements OnInit {
 
-  // Recibe el ID desde el listado si se va a editar
   @Input() id?: number;
 
   servicioForm!: FormGroup;
@@ -55,10 +46,10 @@ export class ServiciosFormPage implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private serviciosService: ServiciosService
   ) { }
 
-  // Determina si estamos en modo edición
   get esEdicion(): boolean {
     return this.id !== undefined;
   }
@@ -66,7 +57,6 @@ export class ServiciosFormPage implements OnInit {
   async ngOnInit(): Promise<void> {
     this.crearFormulario();
 
-    // Si viene un ID, cargamos los datos existentes del servicio
     if (this.esEdicion) {
       await this.cargarServicio();
     }
@@ -94,7 +84,6 @@ export class ServiciosFormPage implements OnInit {
       ?? 'El valor ingresado no es válido.';
   }
 
-  // Consulta el servicio por su ID y llena el formulario
   private async cargarServicio(): Promise<void> {
     if (this.id === undefined) {
       return;
@@ -103,11 +92,9 @@ export class ServiciosFormPage implements OnInit {
     this.cargando = true;
 
     try {
-      const response = await axios.get<{ data: ServicioDetalle }>(
-        `${environment.apiUrl}/items/servicio/${this.id}`
+      const servicio = await firstValueFrom(
+        this.serviciosService.detalle(this.id)
       );
-
-      const servicio = response.data.data;
 
       this.servicioForm.patchValue({
         nombre: servicio.nombre,
@@ -116,7 +103,7 @@ export class ServiciosFormPage implements OnInit {
         duracion: servicio.duracion
       });
     } catch (error: any) {
-      console.error('Error al cargar el servicio:', error.response?.data || error);
+      console.error('Error al cargar el servicio:', error);
 
       const alerta = await this.alertController.create({
         header: 'Error',
@@ -131,9 +118,7 @@ export class ServiciosFormPage implements OnInit {
   }
 
   async cerrarModal(): Promise<void> {
-    await this.modalController.dismiss({
-      guardado: false
-    });
+    await this.modalController.dismiss({ guardado: false });
   }
 
   async guardarServicio(): Promise<void> {
@@ -154,23 +139,9 @@ export class ServiciosFormPage implements OnInit {
 
     try {
       if (this.esEdicion && this.id !== undefined) {
-        // Petición PATCH para actualizar
-        await axios.patch(
-          `${environment.apiUrl}/items/servicio/${this.id}`,
-          servicioData,
-          {
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+        await firstValueFrom(this.serviciosService.actualizar(this.id, servicioData));
       } else {
-        // Petición POST para crear
-        await axios.post(
-          `${environment.apiUrl}/items/servicio`,
-          servicioData,
-          {
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+        await firstValueFrom(this.serviciosService.crear(servicioData));
       }
 
       const alerta = await this.alertController.create({
@@ -188,7 +159,7 @@ export class ServiciosFormPage implements OnInit {
     } catch (error: any) {
       console.error(
         this.esEdicion ? 'Error al actualizar el servicio:' : 'Error al guardar el servicio:',
-        JSON.stringify(error.response?.data, null, 2) || error
+        error
       );
 
       const alerta = await this.alertController.create({
@@ -204,5 +175,4 @@ export class ServiciosFormPage implements OnInit {
       this.guardando = false;
     }
   }
-
 }

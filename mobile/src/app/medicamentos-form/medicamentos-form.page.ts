@@ -1,18 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { MedicamentosService } from '../services/medicamentos';
 
 interface MedicamentoGuardar {
-  nombre: string;
-  descripcion: string;
-  activo: number;
-}
-
-interface MedicamentoDetalle {
-  idmedicamento?: number;
-  id?: number;
   nombre: string;
   descripcion: string;
   activo: number;
@@ -26,7 +18,7 @@ interface MedicamentoDetalle {
 })
 export class MedicamentosFormPage implements OnInit {
 
-  @Input() id?: number; // <-- Recibe el ID si estamos editando
+  @Input() id?: number;
 
   medicamentoForm!: FormGroup;
   cargando: boolean = false;
@@ -48,7 +40,8 @@ export class MedicamentosFormPage implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private modalController: ModalController,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private medicamentosService: MedicamentosService
   ) { }
 
   get esEdicion(): boolean {
@@ -86,10 +79,9 @@ export class MedicamentosFormPage implements OnInit {
     this.cargando = true;
 
     try {
-      const response = await axios.get<{ data: MedicamentoDetalle }>(
-        `${environment.apiUrl}/items/medicamento/${this.id}`
+      const med = await firstValueFrom(
+        this.medicamentosService.detalle(this.id)
       );
-      const med = response.data.data;
 
       this.medicamentoForm.patchValue({
         nombre: med.nombre,
@@ -125,9 +117,7 @@ export class MedicamentosFormPage implements OnInit {
   }
 
   async cerrarModal(): Promise<void> {
-    await this.modalController.dismiss({
-      guardado: false
-    });
+    await this.modalController.dismiss({ guardado: false });
   }
 
   async guardarMedicamento(): Promise<void> {
@@ -137,7 +127,6 @@ export class MedicamentosFormPage implements OnInit {
     }
 
     this.guardando = true;
-
     const valores = this.medicamentoForm.value;
 
     const medicamento: MedicamentoGuardar = {
@@ -148,45 +137,31 @@ export class MedicamentosFormPage implements OnInit {
 
     try {
       if (this.esEdicion && this.id !== undefined) {
-        await axios.patch(
-          `${environment.apiUrl}/items/medicamento/${this.id}`,
-          medicamento,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await firstValueFrom(this.medicamentosService.actualizar(this.id, medicamento));
       } else {
-        await axios.post(
-          `${environment.apiUrl}/items/medicamento`,
-          medicamento,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await firstValueFrom(this.medicamentosService.crear(medicamento));
       }
 
       const alerta = await this.alertController.create({
         header: this.esEdicion ? 'Medicamento actualizado' : 'Medicamento guardado',
-        message: this.esEdicion ? 'El medicamento fue actualizado correctamente.' : 'El medicamento fue registrado correctamente.',
+        message: this.esEdicion
+          ? 'El medicamento fue actualizado correctamente.'
+          : 'El medicamento fue registrado correctamente.',
         buttons: ['Aceptar']
       });
 
       await alerta.present();
       await alerta.onDidDismiss();
 
-      await this.modalController.dismiss({
-        guardado: true
-      });
+      await this.modalController.dismiss({ guardado: true });
     } catch (error) {
       console.error('Error al guardar el medicamento:', error);
 
       const alerta = await this.alertController.create({
         header: 'Error',
-        message: this.esEdicion ? 'No fue posible actualizar el medicamento.' : 'No fue posible guardar el medicamento. Revisa los datos, la conexión y los permisos en Directus.',
+        message: this.esEdicion
+          ? 'No fue posible actualizar el medicamento.'
+          : 'No fue posible guardar el medicamento. Revisa los datos, la conexión y los permisos en Directus.',
         buttons: ['Aceptar']
       });
 
@@ -195,5 +170,4 @@ export class MedicamentosFormPage implements OnInit {
       this.guardando = false;
     }
   }
-
 }

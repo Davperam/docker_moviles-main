@@ -2,11 +2,14 @@
   <ion-toolbar [color]="color">
     <ion-buttons slot="start">
       <ion-back-button [defaultHref]="defaultHref" ></ion-back-button>
-
-      
     </ion-buttons>
 
-    <ion-title>{{ nombre }}</ion-title>
+    <ion-title class="ion-text-center">{{ nombre }}</ion-title>
+
+    <!-- Logo Dental -->
+    <ion-buttons slot="end" class="toolbar-logo-container">
+      <img src="assets/icon/LogoDental.png" alt="DentiControl Logo" class="toolbar-logo" />
+    </ion-buttons>
 
     <!-- ng-content por si la página necesita agregar botones a la derecha -->
     <ng-content></ng-content>

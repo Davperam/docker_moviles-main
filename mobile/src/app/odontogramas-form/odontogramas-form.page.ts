@@ -1,23 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { OdontogramasService } from '../services/odontogramas';
 
 interface OdontogramaGuardar {
   idexpediente: number;
   observaciones: string;
-  diente: number; // <-- Cambiado a number
-  estado: string;
-  tratamiento: string;
-}
-
-interface OdontogramaDetalle {
-  idodontograma?: number;
-  id?: number;
-  idexpediente: number;
-  observaciones: string;
-  diente: number; // <-- Cambiado a number
+  diente: number;
   estado: string;
   tratamiento: string;
 }
@@ -35,8 +25,12 @@ export class OdontogramasFormPage implements OnInit {
   odontogramasForm!: FormGroup;
   cargando: boolean = false;
   guardando: boolean = false;
+  expedientesList: any[] = [];
 
   mensajesValidacion: Record<string, Record<string, string>> = {
+    idexpediente: {
+      required: 'Debe seleccionar un paciente de la lista.'
+    },
     observaciones: {
       required: 'Las observaciones son obligatorias.',
       maxlength: 'Las observaciones no deben superar 150 caracteres.'
@@ -53,18 +47,14 @@ export class OdontogramasFormPage implements OnInit {
     tratamiento: {
       required: 'El tratamiento es obligatorio.',
       maxlength: 'El tratamiento no debe superar 150 caracteres.'
-    },
-    idexpediente: {
-      required: 'El idexpediente es obligatorio.',
-      min: 'El idexpediente debe ser igual o mayor que cero.',
-      pattern: 'El idexpediente debe contener únicamente números enteros.'
     }
   };
 
   constructor(
     private formBuilder: FormBuilder,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private odontogramasService: OdontogramasService
   ) { }
 
   get esEdicion(): boolean {
@@ -73,6 +63,7 @@ export class OdontogramasFormPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.crearFormulario();
+    await this.cargarExpedientes();
 
     if (this.esEdicion) {
       await this.cargarOdontograma();
@@ -81,29 +72,29 @@ export class OdontogramasFormPage implements OnInit {
 
   private crearFormulario(): void {
     this.odontogramasForm = this.formBuilder.group({
-      observaciones: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      diente: ['', [
-        Validators.required,
-        Validators.min(0),
-        Validators.pattern('^[0-9]+$')
-      ]],
-      tratamiento: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      estado: ['', [
-        Validators.required,
-        Validators.maxLength(150)
-      ]],
-      idexpediente: ['', [
-        Validators.required,
-        Validators.min(0),
-        Validators.pattern('^[0-9]+$')
-      ]]
+      idexpediente: ['', [Validators.required]],
+      observaciones: ['', [Validators.required, Validators.maxLength(150)]],
+      diente: ['', [Validators.required, Validators.min(0), Validators.pattern('^[0-9]+$')]],
+      tratamiento: ['', [Validators.required, Validators.maxLength(150)]],
+      estado: ['', [Validators.required, Validators.maxLength(150)]]
     });
+  }
+
+  async cargarExpedientes(): Promise<void> {
+    try {
+      this.expedientesList = await firstValueFrom(this.odontogramasService.expedientes());
+    } catch (error) {
+      console.error('Error al cargar la lista de expedientes:', error);
+    }
+  }
+
+  getNombrePaciente(exp: any): string {
+    if (exp?.idpaciente && typeof exp.idpaciente === 'object') {
+      const { nombre = '', paterno = '', materno = '' } = exp.idpaciente;
+      const nombreCompleto = `${nombre} ${paterno} ${materno}`.trim();
+      return nombreCompleto ? `${nombreCompleto} (Exp. #${exp.idexpediente})` : `Expediente #${exp.idexpediente}`;
+    }
+    return `Expediente #${exp.idexpediente}`;
   }
 
   private async cargarOdontograma(): Promise<void> {
@@ -114,10 +105,9 @@ export class OdontogramasFormPage implements OnInit {
     this.cargando = true;
 
     try {
-      const response = await axios.get<{ data: OdontogramaDetalle }>(
-        `${environment.apiUrl}/items/odontograma/${this.id}`
+      const o = await firstValueFrom(
+        this.odontogramasService.detalle(this.id)
       );
-      const o = response.data.data;
 
       this.odontogramasForm.patchValue({
         idexpediente: o.idexpediente,
@@ -131,7 +121,7 @@ export class OdontogramasFormPage implements OnInit {
 
       const alerta = await this.alertController.create({
         header: 'Error',
-        message: 'No fue posible cargar los datos del odontograma. Revisa la conexión y los permisos de lectura en Directus.',
+        message: 'No fue posible cargar los datos del odontograma.',
         buttons: ['Aceptar']
       });
 
@@ -155,9 +145,7 @@ export class OdontogramasFormPage implements OnInit {
   }
 
   async cerrarModal(): Promise<void> {
-    await this.modalController.dismiss({
-      guardado: false
-    });
+    await this.modalController.dismiss({ guardado: false });
   }
 
   async guardarOdontogramas(): Promise<void> {
@@ -167,38 +155,21 @@ export class OdontogramasFormPage implements OnInit {
     }
 
     this.guardando = true;
-
     const valores = this.odontogramasForm.value;
 
     const odontograma: OdontogramaGuardar = {
+      idexpediente: Number(valores.idexpediente),
       observaciones: valores.observaciones ? String(valores.observaciones).trim() : '',
       estado: valores.estado ? String(valores.estado).trim() : '',
-      diente: Number(valores.diente) || 0, // <-- Convertido correctamente a número
-      tratamiento: valores.tratamiento ? String(valores.tratamiento).trim() : '',
-      idexpediente: Number(valores.idexpediente) || 0
+      diente: Number(valores.diente) || 0,
+      tratamiento: valores.tratamiento ? String(valores.tratamiento).trim() : ''
     };
 
     try {
       if (this.esEdicion && this.id !== undefined) {
-        await axios.patch(
-          `${environment.apiUrl}/items/odontograma/${this.id}`,
-          odontograma,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await firstValueFrom(this.odontogramasService.actualizar(this.id, odontograma));
       } else {
-        await axios.post(
-          `${environment.apiUrl}/items/odontograma`,
-          odontograma,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        await firstValueFrom(this.odontogramasService.crear(odontograma));
       }
 
       const alerta = await this.alertController.create({
@@ -210,15 +181,13 @@ export class OdontogramasFormPage implements OnInit {
       await alerta.present();
       await alerta.onDidDismiss();
 
-      await this.modalController.dismiss({
-        guardado: true
-      });
+      await this.modalController.dismiss({ guardado: true });
     } catch (error: any) {
-      console.error('Error al guardar el odontograma:', error.response?.data || error);
+      console.error('Error al guardar el odontograma:', error);
 
       const alerta = await this.alertController.create({
         header: 'Error',
-        message: this.esEdicion ? 'No fue posible actualizar el odontograma.' : 'No fue posible guardar el odontograma. Revisa los datos, la conexión y los permisos de creación en Directus.',
+        message: this.esEdicion ? 'No fue posible actualizar el odontograma.' : 'No fue posible guardar el odontograma.',
         buttons: ['Aceptar']
       });
 
@@ -227,5 +196,4 @@ export class OdontogramasFormPage implements OnInit {
       this.guardando = false;
     }
   }
-
 }

@@ -53,11 +53,17 @@
 
       <!-- Id Expediente -->
       <ion-item>
-        <ion-input label="Id Expediente" labelPlacement="stacked" type="number" formControlName="idexpediente" min="0"></ion-input>
+        <ion-label position="stacked">Paciente *</ion-label>
+        <ion-select formControlName="idexpediente" placeholder="Selecciona un paciente" interface="popover">
+          <ion-select-option *ngFor="let exp of expedientesList" [value]="exp.idexpediente">
+            {{ getNombrePaciente(exp) }}
+          </ion-select-option>
+        </ion-select>
       </ion-item>
-      <ion-note color="danger" *ngIf="getError('idexpediente') as error">
-        {{ error }}
-      </ion-note>
+
+      <ion-text color="danger" *ngIf="getError('idexpediente')">
+        <p class="error-text" style="font-size: 0.8rem; margin: 4px 16px;">{{ getError('idexpediente') }}</p>
+      </ion-text>
     </ion-list>
 
     <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando || cargando">

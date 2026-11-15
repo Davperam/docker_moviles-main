@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { PacientesService } from '../services/pacientes';
 
 interface Paciente {
   idpaciente: number;
@@ -31,12 +31,14 @@ export class PacientesViewPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private pacientesService: PacientesService
   ) { }
 
   ngOnInit() {
     this.cargarPaciente();
   }
+
   async cargarPaciente(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
 
@@ -56,16 +58,14 @@ export class PacientesViewPage implements OnInit {
     await loading.present();
 
     try {
-      const response = await axios.get<{ data: Paciente }>(
-        `${environment.apiUrl}/items/paciente/${encodeURIComponent(id)}`
+      this.paciente = await firstValueFrom(
+        this.pacientesService.detalle(Number(id))
       );
-      this.paciente = response.data.data;
     } catch (error) {
       console.error('Error al cargar el paciente:', error);
       this.mensajeError = 'Ocurrió un error al cargar el paciente.';
     } finally {
-      loading.dismiss();
+      await loading.dismiss();
     }
   }
-
 }

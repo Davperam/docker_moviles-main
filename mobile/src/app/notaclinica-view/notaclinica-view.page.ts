@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { NotaclinicaService } from '../services/notaclinica';
 
 interface NotaClinica {
   idnota: number;
@@ -21,11 +21,12 @@ interface NotaClinica {
 export class NotaclinicaViewPage implements OnInit {
 
   nota: NotaClinica | null = null;
-mensajeError: string = '';
+  mensajeError: string = '';
 
   constructor(
     private route: ActivatedRoute,
-    private loading: LoadingController
+    private loading: LoadingController,
+    private notaclinicaService: NotaclinicaService
   ) {}
 
   ngOnInit(): void {
@@ -33,37 +34,32 @@ mensajeError: string = '';
   }
 
   async cargarNota(): Promise<void> {
-  const id = this.route.snapshot.paramMap.get('id');
+    const id = this.route.snapshot.paramMap.get('id');
 
-  this.nota = null;
-  this.mensajeError = '';
+    this.nota = null;
+    this.mensajeError = '';
 
-  if (!id) {
-    this.mensajeError = 'No se recibió el ID del nota.';
-    return;
+    if (!id) {
+      this.mensajeError = 'No se recibió el ID de la nota clínica.';
+      return;
+    }
+
+    const loading = await this.loading.create({
+      message: 'Cargando nota...',
+      spinner: 'bubbles',
+    });
+
+    await loading.present();
+
+    try {
+      this.nota = await firstValueFrom(
+        this.notaclinicaService.detalle(Number(id))
+      );
+    } catch (error) {
+      console.error('Error al cargar la nota:', error);
+      this.mensajeError = 'No se pudo cargar la nota. Revisa el ID, la conexión y los permisos de lectura.';
+    } finally {
+      await loading.dismiss();
+    }
   }
-
-  const loading = await this.loading.create({
-    message: 'Cargando nota...',
-    spinner: 'bubbles',
-  });
-
-  await loading.present();
-
-  try {
-    const response = await axios.get<{ data: NotaClinica }>(
-      `${environment.apiUrl}/items/notaclinica/${encodeURIComponent(id)}`
-    );
-
-    this.nota = response.data.data;
-  } catch (error) {
-    console.error('Error al cargar el nota:', error);
-    this.mensajeError = 'No se pudo cargar el nota. Revisa el ID, la conexión y los permisos de lectura.';
-  } finally {
-    await loading.dismiss();
-  }
-}
-
-  
-
 }

@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
-import axios from 'axios';
-import { environment } from '../../environments/environment';
+import { firstValueFrom } from 'rxjs';
+import { PacientesService } from '../services/pacientes';
 
 interface PacienteGuardar {
   nombre: string;
@@ -10,20 +10,6 @@ interface PacienteGuardar {
   materno: string;
   nacimiento: string;
   tiposangre: number;
-  telefono: string;
-  correo: string;
-  direccion: string;
-  registro: string;
-  activo: number;
-}
-
-interface PacienteDetalle {
-  idpaciente: number;
-  nombre: string;
-  paterno: string;
-  materno: string;
-  nacimiento: string;
-  tiposangre: any;
   telefono: string;
   correo: string;
   direccion: string;
@@ -39,14 +25,12 @@ interface PacienteDetalle {
 })
 export class PacientesFormPage implements OnInit {
 
-  // Recibe el ID enviado desde componentProps del modal (si no llega ID, es modo creación)
   @Input() id?: number;
 
   pacienteForm!: FormGroup;
   cargando: boolean = false;
   guardando: boolean = false;
 
-  // Lista para poblar el selector en el HTML
   tiposSangreList = [
     { id: 1, nombre: 'O+' },
     { id: 2, nombre: 'A+' },
@@ -74,10 +58,10 @@ export class PacientesFormPage implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private alertController: AlertController,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private pacientesService: PacientesService
   ) { }
 
-  // Getter para determinar si se esta editando o creando
   get esEdicion(): boolean {
     return this.id !== undefined;
   }
@@ -85,7 +69,6 @@ export class PacientesFormPage implements OnInit {
   async ngOnInit(): Promise<void> {
     this.crearFormulario();
 
-    // Si viene un ID, se consulta el paciente existente
     if (this.esEdicion) {
       await this.cargarPaciente();
     }
@@ -115,7 +98,6 @@ export class PacientesFormPage implements OnInit {
     return this.mensajesValidacion[controlName]?.[tipoError] ?? 'El valor ingresado no es válido.';
   }
 
-  // Carga los datos del paciente desde Directus y los coloca en el formulario
   private async cargarPaciente(): Promise<void> {
     if (this.id === undefined) {
       return;
@@ -124,13 +106,10 @@ export class PacientesFormPage implements OnInit {
     this.cargando = true;
 
     try {
-      const response = await axios.get<{ data: PacienteDetalle }>(
-        `${environment.apiUrl}/items/paciente/${this.id}`
+      const paciente = await firstValueFrom(
+        this.pacientesService.detalle(this.id)
       );
 
-      const paciente = response.data.data;
-
-      // Si Directus devuelve la relación como objeto, obtenemos su ID
       const tiposangreId = typeof paciente.tiposangre === 'object' && paciente.tiposangre !== null
         ? paciente.tiposangre.id
         : paciente.tiposangre;
@@ -148,7 +127,7 @@ export class PacientesFormPage implements OnInit {
         activo: paciente.activo
       });
     } catch (error: any) {
-      console.error('Error al cargar el paciente:', error.response?.data || error);
+      console.error('Error al cargar el paciente:', error);
 
       const alerta = await this.alertController.create({
         header: 'Error',
@@ -190,23 +169,9 @@ export class PacientesFormPage implements OnInit {
 
     try {
       if (this.esEdicion && this.id !== undefined) {
-        // Modo Actualización con PATCH
-        await axios.patch(
-          `${environment.apiUrl}/items/paciente/${this.id}`,
-          paciente,
-          {
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+        await firstValueFrom(this.pacientesService.actualizar(this.id, paciente));
       } else {
-        // Modo Creación con POST
-        await axios.post(
-          `${environment.apiUrl}/items/paciente`,
-          paciente,
-          {
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+        await firstValueFrom(this.pacientesService.crear(paciente));
       } 
 
       const alerta = await this.alertController.create({
@@ -224,7 +189,7 @@ export class PacientesFormPage implements OnInit {
     } catch (error: any) {
       console.error(
         this.esEdicion ? 'Error al actualizar el paciente:' : 'Error al guardar el paciente:',
-        error.response?.data || error
+        error
       );
 
       const alerta = await this.alertController.create({
@@ -240,5 +205,4 @@ export class PacientesFormPage implements OnInit {
       this.guardando = false;
     }
   }
-
 }
