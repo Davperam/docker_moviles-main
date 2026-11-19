@@ -1,11 +1,44 @@
-<ion-header><ion-toolbar><ion-buttons slot="start"><ion-back-button defaultHref="/login"></ion-back-button></ion-buttons><ion-title>Crear cuenta</ion-title></ion-toolbar></ion-header>
-<ion-content class="ion-padding">
-  <form [formGroup]="form" (ngSubmit)="registrar()">
-    <ion-input label="Nombre" labelPlacement="stacked" formControlName="nombre" autocomplete="given-name"></ion-input>
-    <ion-input label="Correo" labelPlacement="stacked" type="email" formControlName="email" autocomplete="email"></ion-input>
-    <ion-input label="Contraseña" labelPlacement="stacked" type="password" formControlName="password" autocomplete="new-password"></ion-input>
-    <ion-note color="danger" *ngIf="form.touched && form.invalid">Completa el nombre, un correo válido y una contraseña de al menos 8 caracteres.</ion-note>
-    <p *ngIf="mensaje" role="status">{{ mensaje }}</p>
-    <ion-button fill="solid" expand="block" type="submit" [disabled]="enviando">{{ enviando ? 'Enviando...' : 'Registrarme' }}</ion-button>
-  </form>
+<ion-content class="dc-content" [fullscreen]="true">
+
+  <!-- Curva y logo -->
+   <div class="dc-hero">
+    <div class="dc-hero-inner">
+      <img src="assets/icon/Img-login.png" alt="Denticontrol" class="dc-logo"/>
+    </div>
+   </div>
+
+   <!-- Formulario -->
+   <div class="dc-form-container">
+    <form [formGroup]="form" (ngSubmit)="registrar()">
+          <p class="dc-subtitle">Crear cuenta</p>
+
+      <!-- Nombre -->
+      <ion-item lines="full" class="dc-item">
+        <ion-icon slot="start" name="person-outline" class="dc-icon"></ion-icon>
+        <ion-input label="Nombre" labelPlacement="stacked" formControlName="nombre" autocomplete="given-name"></ion-input>
+      </ion-item>
+      <!-- Correo -->
+      <ion-item lines="full" class="dc-item">
+        <ion-icon slot="start" name="mail-outline" class="dc-icon"></ion-icon>
+        <ion-input label="Correo" labelPlacement="stacked" type="email" formControlName="email" autocomplete="email"></ion-input>
+      </ion-item>
+      <!-- Contraseña -->
+       <ion-item lines="full" class="dc-item">
+        <ion-icon slot="start" name="lock-closed-outline" class="dc-icon"></ion-icon>
+        <ion-input label="Contraseña" labelPlacement="stacked" type="password" formControlName="password" autocomplete="new-password"></ion-input>
+      </ion-item>
+
+      <ion-note color="danger" *ngIf="form.touched && form.invalid">Completa el nombre, un correo válido y una contraseña de al menos 8 caracteres.</ion-note>
+      <p *ngIf="mensaje" role="status">{{ mensaje }}</p>
+
+      <!-- Btn registrar -->
+      <ion-button fill="solid" expand="block" type="submit" class="dc-submit-btn" [disabled]="enviando">{{ enviando ? 'Enviando...' : 'Registrarme' }}</ion-button>
+    </form>
+   </div>
+
+   <div class="dc-links">
+    <span>¿Ya tienes una cuenta?</span>
+      <a routerLink="/login">Iniciar sesión</a>
+   </div>
+
 </ion-content>

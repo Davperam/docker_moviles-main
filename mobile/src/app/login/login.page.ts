@@ -12,6 +12,7 @@ import { AuthService } from '../services/auth';
 export class LoginPage  {
  form: FormGroup;
   enviando = false;
+  verPassword = false;
   mensaje = '';
   constructor(fb: FormBuilder, private auth: AuthService, private router: Router) {
     this.form = fb.group({ email: ['', [Validators.required, Validators.email]], password: ['', Validators.required] });

@@ -1,0 +1,111 @@
+.dc-content {
+  --background: #ffffff;
+}
+
+/* Franja superior azul con curva inferior */
+.dc-hero {
+  background: linear-gradient(160deg, #3d92b6 0%, #1d647e 55%, #0d3b4d 100%);
+  padding: 44px 24px 90px;
+  border-bottom-left-radius: 50% 25%;
+  border-bottom-right-radius: 50% 25%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dc-hero-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 260px;
+  width: 100%;
+}
+
+.dc-logo {
+  max-width: 190px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Contenedor de campos y botón */
+.dc-form-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 36px 28px 24px;
+}
+
+.dc-item {
+  --background: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --border-color: #cbd5e1;
+  --highlight-color-focused: #0099cc;
+  --placeholder-font-size: 1rem;
+  margin-bottom: 18px;
+}
+
+.dc-item ion-input {
+  font-size: 1rem; /* Tamaño del texto que escribe el usuario */
+}
+
+.dc-icon {
+  color: #64748b;
+  font-size: 20px;
+  margin-right: 12px;
+}
+
+.dc-eye-btn {
+  --color: #64748b;
+  margin: 0;
+}
+
+.dc-feedback {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+
+.dc-status {
+  color: #0f4c61;
+  background: #e6f4f8;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+
+/* Botón pill azul brillante */
+.dc-submit-btn {
+  --background: #0099cc;
+  --background-hover: #0084b0;
+  --background-activated: #007399;
+  --color: #ffffff;
+  --border-radius: 999px;
+  --box-shadow: 0 6px 16px rgba(0, 153, 204, 0.28);
+  height: 46px;
+  margin-top: 22px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+
+/* Enlaces inferiores */
+.dc-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  font-size: 0.85rem;
+
+  a {
+    color: #1e3a5f;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
