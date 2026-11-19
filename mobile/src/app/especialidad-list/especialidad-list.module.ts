@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToolbarModule } from '../components/toolbar/toolbar.module';
+import { SharedModule } from '../components/shared.module';
 import { IonicModule } from '@ionic/angular';
-import { PaginacionModule } from '../components/paginacion/paginacion.module';
+
 
 import { EspecialidadFormPageModule } from '../especialidad-form/especialidad-form.module';
 
@@ -16,8 +16,7 @@ import { EspecialidadListPage } from './especialidad-list.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    ToolbarModule,
-    PaginacionModule,
+    SharedModule,
     EspecialidadListPageRoutingModule
   ],
   declarations: [EspecialidadListPage]

@@ -1,20 +1,20 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToolbarModule } from '../components/toolbar/toolbar.module';
 
 import { IonicModule } from '@ionic/angular';
 
 import { ExpedientemedicamentoListPageRoutingModule } from './expedientemedicamento-list-routing.module';
 
 import { ExpedientemedicamentoListPage } from './expedientemedicamento-list.page';
+import { SharedModule } from '../components/shared.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ToolbarModule,
+    SharedModule,
     ExpedientemedicamentoListPageRoutingModule
   ],
   declarations: [ExpedientemedicamentoListPage]

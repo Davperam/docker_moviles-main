@@ -8,14 +8,15 @@ import { IonicModule } from '@ionic/angular';
 import { ServiciosListPageRoutingModule } from './servicios-list-routing.module';
 
 import { ServiciosListPage } from './servicios-list.page';
-import { ServiciosFormPageModule } from '../servicios-form/servicios-form.module';
+
+import { SharedModule } from '../components/shared.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ToolbarModule,
+    SharedModule,
     ServiciosListPageRoutingModule
   ],
   declarations: [ServiciosListPage]

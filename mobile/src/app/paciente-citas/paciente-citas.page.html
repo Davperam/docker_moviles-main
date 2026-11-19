@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar color="secondary">
     <ion-buttons slot="start">
       <!-- Este botón regresa directamente a la ficha del paciente -->
       <ion-back-button [defaultHref]="'/pacientes-view/' + idPaciente"></ion-back-button>
@@ -87,3 +87,6 @@
     </ion-card>
   </div>
 </ion-content>
+
+<!-- Menú Rápido Reutilizable -->
+<app-tab-bar tabActivo="pacientes"></app-tab-bar>

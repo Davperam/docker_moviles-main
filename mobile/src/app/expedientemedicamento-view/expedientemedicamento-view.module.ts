@@ -7,12 +7,14 @@ import { IonicModule } from '@ionic/angular';
 import { ExpedientemedicamentoViewPageRoutingModule } from './expedientemedicamento-view-routing.module';
 
 import { ExpedientemedicamentoViewPage } from './expedientemedicamento-view.page';
+import { SharedModule } from '../components/shared.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
+    SharedModule,
     ExpedientemedicamentoViewPageRoutingModule
   ],
   declarations: [ExpedientemedicamentoViewPage]

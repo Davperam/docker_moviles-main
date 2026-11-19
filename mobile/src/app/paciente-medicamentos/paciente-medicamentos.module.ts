@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SharedModule } from '../components/shared.module';
 
 import { IonicModule } from '@ionic/angular';
 
@@ -13,6 +14,7 @@ import { PacienteMedicamentosPage } from './paciente-medicamentos.page';
     CommonModule,
     FormsModule,
     IonicModule,
+    SharedModule,
     PacienteMedicamentosPageRoutingModule
   ],
   declarations: [PacienteMedicamentosPage]

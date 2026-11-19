@@ -7,12 +7,14 @@ import { IonicModule } from '@ionic/angular';
 import { PagosViewPageRoutingModule } from './pagos-view-routing.module';
 
 import { PagosViewPage } from './pagos-view.page';
+import { SharedModule } from '../components/shared.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
+    SharedModule,
     PagosViewPageRoutingModule
   ],
   declarations: [PagosViewPage]

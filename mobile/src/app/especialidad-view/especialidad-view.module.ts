@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { SharedModule } from '../components/shared.module';
 import { IonicModule } from '@ionic/angular';
 
 import { EspecialidadViewPageRoutingModule } from './especialidad-view-routing.module';
@@ -13,6 +13,7 @@ import { EspecialidadViewPage } from './especialidad-view.page';
     CommonModule,
     FormsModule,
     IonicModule,
+    SharedModule,
     EspecialidadViewPageRoutingModule
   ],
   declarations: [EspecialidadViewPage]

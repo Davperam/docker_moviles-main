@@ -1,9 +1,8 @@
 import { NgModule } from '@angular/core';
+import { SharedModule } from '../components/shared.module';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToolbarModule } from '../components/toolbar/toolbar.module';
 import { IonicModule } from '@ionic/angular';
-import { PaginacionModule } from '../components/paginacion/paginacion.module';
 
 import { PacientesListPageRoutingModule } from './pacientes-list-routing.module';
 
@@ -16,8 +15,7 @@ import { PacientesFormPageModule } from '../pacientes-form/pacientes-form.module
     CommonModule,
     FormsModule,
     IonicModule,
-    ToolbarModule,
-    PaginacionModule,
+    SharedModule ,
     PacientesListPageRoutingModule,
     PacientesFormPageModule
   ],
