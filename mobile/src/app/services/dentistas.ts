@@ -12,6 +12,10 @@ export interface Dentista {
   telefono: string;
   correo: string;
   activo: number;
+  especialidades?: {
+    iddentistaespecialidad: number;
+    idespecialidad: { idespecialidad: number; nombre: string };
+  }[];
 }
 
 export interface DentistaGuardar {
@@ -22,6 +26,9 @@ export interface DentistaGuardar {
   telefono: string;
   correo: string;
   activo: number;
+  especialidades?:
+    | { idespecialidad: number }[]
+    | { create: { idespecialidad: number }[]; delete: number[] };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -43,9 +50,12 @@ export class DentistasService {
     })).pipe(map(response => response.data.data));
   }
 
-  detalle(id: number): Observable<Dentista> {
-    return defer(() => axios.get<{ data: Dentista }>(this.url + '/' + id))
-      .pipe(map(response => response.data.data));
+    detalle(id: number): Observable<Dentista> {
+    return defer(() => axios.get<{ data: Dentista }>(this.url + '/' + id, {
+      params: {
+        fields: '*,especialidades.iddentistaespecialidad,especialidades.idespecialidad.idespecialidad,especialidades.idespecialidad.nombre'
+      }
+    })).pipe(map(response => response.data.data));
   }
 
   crear(dentista: DentistaGuardar): Observable<Dentista> {

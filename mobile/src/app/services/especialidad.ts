@@ -20,6 +20,17 @@ export interface EspecialidadGuardar {
 export class EspecialidadService {
   private url = environment.apiUrl + '/items/especialidad';
 
+  catalogo(): Observable<Especialidad[]> {
+    return defer(() => axios.get<{ data: Especialidad[] }>(this.url, {
+      params: {
+        fields: 'idespecialidad,nombre',
+        filter: JSON.stringify({ activo: { _eq: 1 } }),
+        sort: 'nombre',
+        limit: -1
+      }
+    })).pipe(map(response => response.data.data));
+  }
+
   private filtro(busqueda: string): Record<string, string> {
     const texto = busqueda.trim();
     return texto ? { filter: JSON.stringify({ _or: [

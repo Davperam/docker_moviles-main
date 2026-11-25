@@ -1,18 +1,10 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray,FormControl} from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
-import { DentistasService } from '../services/dentistas';
+import { DentistasService, DentistaGuardar } from '../services/dentistas';
+import { Especialidad, EspecialidadService } from '../services/especialidad';
 
-interface DentistaGuardar {
-  nombre: string;
-  paterno: string;
-  materno: string;
-  cedula: string;
-  telefono: string;
-  correo: string;
-  activo: number;
-}
 
 @Component({
   selector: 'app-dentistas-form',
@@ -23,6 +15,11 @@ interface DentistaGuardar {
 export class DentistasFormPage implements OnInit {
 
   @Input() id?: number;
+
+
+  especialidades: Especialidad[] = [];
+  enlacesEspecialidades: { id: number; especialidadId: number }[] = [];
+  mensajeEspecialidades = '';
 
   dentistaForm!: FormGroup;
   cargando: boolean = false;
@@ -63,6 +60,7 @@ export class DentistasFormPage implements OnInit {
     private alertController: AlertController,
     private modalController: ModalController,
     private dentistasService: DentistasService,
+    private especialidadesService: EspecialidadService
   ) { }
 
   get esEdicion(): boolean {
@@ -71,6 +69,7 @@ export class DentistasFormPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.crearFormulario();
+    await this.cargarEspecialidades();
 
     if (this.esEdicion) {
       await this.cargarDentista();
@@ -106,7 +105,27 @@ export class DentistasFormPage implements OnInit {
       activo: [1, [
         Validators.required
       ]]
-    });
+    });this.dentistaForm.addControl('especialidades', this.formBuilder.array([]));
+  }
+
+    get especialidadesFA(): FormArray {
+    return this.dentistaForm.get('especialidades') as FormArray;
+  }
+
+  agregarEspecialidad(): void {
+    this.especialidadesFA.push(new FormControl(null, Validators.required));
+  }
+
+  eliminarEspecialidad(indice: number): void {
+    this.especialidadesFA.removeAt(indice);
+  }
+
+  private async cargarEspecialidades(): Promise<void> {
+    try {
+      this.especialidades = await firstValueFrom(this.especialidadesService.catalogo());
+    } catch {
+      this.mensajeEspecialidades = 'No fue posible cargar el catálogo de especialidades.';
+    }
   }
 
   getError(controlName: string): string {
@@ -131,6 +150,15 @@ export class DentistasFormPage implements OnInit {
 
     try {
       const dentista = await firstValueFrom(this.dentistasService.detalle(this.id));
+
+      this.enlacesEspecialidades = (dentista.especialidades ?? []).map(enlace => ({
+        id: enlace.iddentistaespecialidad,
+        especialidadId: enlace.idespecialidad.idespecialidad
+      }));
+      this.especialidadesFA.clear();
+      for (const enlace of this.enlacesEspecialidades) {
+        this.especialidadesFA.push(new FormControl(enlace.especialidadId, Validators.required));
+      }
 
       this.dentistaForm.patchValue({
         nombre: dentista.nombre,
@@ -178,6 +206,19 @@ export class DentistasFormPage implements OnInit {
       correo: valores.correo ? String(valores.correo).trim() : '',
       activo: Number(valores.activo) || 1
     };
+
+    const ids = [...new Set(this.especialidadesFA.value.map(Number))] as number[];
+      if (this.esEdicion) {
+        const anteriores = new Set(this.enlacesEspecialidades.map(enlace => enlace.especialidadId));
+        dentista.especialidades = {
+          create: ids.filter(id => !anteriores.has(id)).map(id => ({ idespecialidad: id })),
+          delete: this.enlacesEspecialidades
+            .filter(enlace => !ids.includes(enlace.especialidadId))
+            .map(enlace => enlace.id)
+        };
+      } else {
+        dentista.especialidades = ids.map(id => ({ idespecialidad: id }));
+      }
 
     try {
       if (this.esEdicion && this.id !== undefined) {

@@ -33,6 +33,18 @@ export class AlergiasService {
     })).pipe(map(response => response.data.data));
   }
 
+  /* para cargar todas las alergias activas en el selector sin afectar tu listado principal */
+  catalogo(): Observable<Alergia[]> {
+    return defer(() => axios.get<{ data: Alergia[] }>(this.url, {
+      params: {
+        fields: 'idalergia,nombre',
+        filter: JSON.stringify({ activo: { _eq: 1 } }),
+        sort: 'nombre',
+        limit: -1
+      }
+    })).pipe(map(response => response.data.data));
+  }
+
   detalle(id: number): Observable<Alergia> {
     return defer(() => axios.get<{ data: Alergia }>(this.url + '/' + id))
       .pipe(map(response => response.data.data));

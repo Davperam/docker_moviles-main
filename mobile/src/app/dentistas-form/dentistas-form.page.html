@@ -77,6 +77,27 @@
       </ion-note>
     </ion-list>
 
+    <!-- Muchos a muchos -->
+      <section>
+        <h2>Especialidades</h2>
+        <p *ngIf="mensajeEspecialidades" role="status">{{ mensajeEspecialidades }}</p>
+        <ion-button fill="solid" type="button" (click)="agregarEspecialidad()" aria-label="Agregar especialidad">
+          <ion-icon slot="icon-only" name="add"></ion-icon>
+        </ion-button>
+        <div formArrayName="especialidades">
+          <ion-item *ngFor="let control of especialidadesFA.controls; let i = index">
+            <ion-select label="Especialidad" labelPlacement="stacked" [formControlName]="i" interface="popover">
+              <ion-select-option *ngFor="let especialidad of especialidades" [value]="especialidad.idespecialidad">
+                {{ especialidad.nombre }}
+              </ion-select-option>
+            </ion-select>
+            <ion-button fill="solid" type="button" color="danger" (click)="eliminarEspecialidad(i)" aria-label="Quitar especialidad">
+              <ion-icon slot="icon-only" name="trash"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </div>
+      </section>
+
     <ion-button fill="solid" expand="block" type="submit" class="ion-margin-top" [disabled]="guardando || cargando">
       {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Guardar') }}
     </ion-button>

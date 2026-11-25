@@ -1,8 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, FormControl} from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
-import { ExpedienteclinicoService } from '../services/expedienteclinico';
+import { ExpedienteClinicoGuardar, ExpedienteclinicoService } from '../services/expedienteclinico';
+import { Alergia, AlergiasService } from '../services/alergia-service';
 
 interface PacienteOpcion {
   id?: number;
@@ -10,13 +11,6 @@ interface PacienteOpcion {
   nombre: string;
   paterno: string;
   materno: string;
-}
-
-interface ExpedienteClinicoGuardar {
-  idpaciente: number;
-  enfermedades: string;
-  observaciones: string;
-  apertura?: string;
 }
 
 @Component({
@@ -27,7 +21,12 @@ interface ExpedienteClinicoGuardar {
 })
 export class ExpedienteclinicoFormPage implements OnInit {
 
+
   @Input() id?: number;
+
+  alergias: Alergia[] = [];
+  enlacesAlergias: { id: number; alergiaId: number }[] = [];
+  mensajeAlergias = '';
 
   expedienteclinicoForm!: FormGroup;
   cargando: boolean = false;
@@ -53,7 +52,8 @@ export class ExpedienteclinicoFormPage implements OnInit {
     private formBuilder: FormBuilder,
     private alertController: AlertController,
     private modalController: ModalController,
-    private expedientesService: ExpedienteclinicoService
+    private expedientesService: ExpedienteclinicoService,
+    private alergiasService: AlergiasService,
   ) { }
 
   get esEdicion(): boolean {
@@ -62,6 +62,7 @@ export class ExpedienteclinicoFormPage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     this.crearFormulario();
+    await this.cargarAlergias();
     await this.cargarPacientes();
 
     if (this.esEdicion) {
@@ -80,8 +81,29 @@ export class ExpedienteclinicoFormPage implements OnInit {
         Validators.required,
         Validators.maxLength(150)
       ]]
-    });
+    }); this.expedienteclinicoForm.addControl('alergias', this.formBuilder.array([]));
   }
+
+    get alergiasFA(): FormArray {
+    return this.expedienteclinicoForm.get('alergias') as FormArray;
+  }
+
+  agregarAlergia(): void {
+    this.alergiasFA.push(new FormControl(null, Validators.required));
+  }
+
+  eliminarAlergia(indice: number): void {
+    this.alergiasFA.removeAt(indice);
+  }
+
+  private async cargarAlergias(): Promise<void> {
+    try {
+      this.alergias = await firstValueFrom(this.alergiasService.catalogo());
+    } catch {
+      this.mensajeAlergias = 'No fue posible cargar el catálogo de alergias.';
+    }
+  }
+
 
   private async cargarPacientes(): Promise<void> {
     try {
@@ -113,6 +135,15 @@ export class ExpedienteclinicoFormPage implements OnInit {
 
     try {
       const expediente = await firstValueFrom(this.expedientesService.detalle(this.id));
+
+      this.enlacesAlergias = (expediente.alergias ?? []).map(enlace => ({
+        id: enlace.idexpedientealergia,
+        alergiaId: enlace.idalergia.idalergia
+      }));
+      this.alergiasFA.clear();
+      for (const enlace of this.enlacesAlergias) {
+        this.alergiasFA.push(new FormControl(enlace.alergiaId, Validators.required));
+      }
 
       const idPacienteVal = typeof expediente.idpaciente === 'object' && expediente.idpaciente !== null
         ? (expediente.idpaciente.id ?? expediente.idpaciente.idpaciente)
@@ -158,6 +189,19 @@ export class ExpedienteclinicoFormPage implements OnInit {
       enfermedades: valores.enfermedades.trim(),
       observaciones: valores.observaciones?.trim() ?? ''
     };
+
+    const ids = [...new Set(this.alergiasFA.value.map(Number))] as number[];
+    if (this.esEdicion) {
+      const anteriores = new Set(this.enlacesAlergias.map(enlace => enlace.alergiaId));
+      expedienteclinico.alergias = {
+        create: ids.filter(id => !anteriores.has(id)).map(id => ({ idalergia: id })),
+        delete: this.enlacesAlergias
+          .filter(enlace => !ids.includes(enlace.alergiaId))
+          .map(enlace => enlace.id)
+      };
+    } else {
+      expedienteclinico.alergias = ids.map(id => ({ idalergia: id }));
+    }
 
     if (!this.esEdicion) {
       expedienteclinico.apertura = fechaHoy;

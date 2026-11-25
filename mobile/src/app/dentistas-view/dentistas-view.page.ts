@@ -1,19 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
-import { DentistasService } from '../services/dentistas';
-
-interface Dentista {
-  iddentista: number;
-  nombre: string;
-  paterno: string;
-  materno: string;
-  cedula: string;
-  telefono: string;
-  correo: string;
-  activo: number;
-}
+import { DentistasService, Dentista } from '../services/dentistas';
 
 @Component({
   selector: 'app-dentistas-view',
@@ -21,7 +10,7 @@ interface Dentista {
   styleUrls: ['./dentistas-view.page.scss'],
   standalone: false,
 })
-export class DentistasViewPage implements OnInit {
+export class DentistasViewPage {
 
   dentista: Dentista | null = null;
   mensajeError: string = '';
@@ -32,7 +21,7 @@ export class DentistasViewPage implements OnInit {
     private dentistasService: DentistasService
   ) { }
 
-  ngOnInit() {
+  ionViewWillEnter() {
     this.cargarDentista();
   }
 

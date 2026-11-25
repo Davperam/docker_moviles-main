@@ -20,5 +20,13 @@
       <ion-card-subtitle>Correo # {{ detalle.correo }}</ion-card-subtitle>
     </ion-card-header>
 
+    <ion-card-content>
+      <h2>Especialidades</h2>
+      <ul *ngIf="detalle.especialidades?.length; else sinEspecialidades">
+        <li *ngFor="let enlace of detalle.especialidades">{{ enlace.idespecialidad.nombre }}</li>
+      </ul>
+      <ng-template #sinEspecialidades><p>Sin especialidades registradas.</p></ng-template>
+    </ion-card-content>
+
   </ion-card>
 </ion-content>

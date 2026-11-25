@@ -18,6 +18,10 @@ export interface ExpedienteClinico {
   observaciones: string;
   apertura: string;
   pacienteDetalle?: Paciente;
+  alergias?: {
+    idexpedientealergia: number;
+    idalergia: { idalergia: number; nombre: string };
+  }[];
 }
 
 export interface ExpedienteClinicoGuardar {
@@ -25,6 +29,9 @@ export interface ExpedienteClinicoGuardar {
   enfermedades: string;
   observaciones: string;
   apertura?: string;
+  alergias?:
+    | { idalergia: number }[]
+    | { create: { idalergia: number }[]; delete: number[] };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -48,7 +55,7 @@ export class ExpedienteclinicoService {
 
   detalle(id: number): Observable<ExpedienteClinico> {
     return defer(() => axios.get<{ data: ExpedienteClinico }>(`${this.url}/${id}`, {
-      params: { fields: '*,idpaciente.*' }
+      params: { fields: '*,idpaciente.*,alergias.idexpedientealergia,alergias.idalergia.idalergia,alergias.idalergia.nombre'}
     })).pipe(map(response => response.data.data));
   }
 

@@ -26,6 +26,13 @@
       <ion-card-subtitle>Observaciones: {{ detalle.observaciones }}</ion-card-subtitle>
       <ion-card-subtitle>Fecha de Apertura: {{ detalle.apertura }}</ion-card-subtitle>
     </ion-card-header>
+
+          <h2>Alergias</h2>
+      <ul *ngIf="detalle.alergias?.length; else sinAlergias">
+        <li *ngFor="let enlace of detalle.alergias">{{ enlace.idalergia.nombre }}</li>
+      </ul>
+      <ng-template #sinAlergias><p>Sin alergias registradas.</p></ng-template>
+      
   </ion-card>
 </ion-content>
 

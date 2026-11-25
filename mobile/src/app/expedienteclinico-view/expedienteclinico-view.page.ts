@@ -1,25 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
-import { ExpedienteclinicoService } from '../services/expedienteclinico';
+import { ExpedienteclinicoService, ExpedienteClinico, Paciente } from '../services/expedienteclinico';
 
-interface Paciente {
-  id?: number;
-  idpaciente?: number;
-  nombre: string;
-  paterno: string;
-  materno: string;
-}
-
-interface ExpedienteClinico {
-  idexpediente: number;
-  idpaciente: number | any;
-  enfermedades: string;
-  observaciones: string;
-  apertura: string;
-  pacienteDetalle?: Paciente;
-}
 
 @Component({
   selector: 'app-expedienteclinico-view',
@@ -27,7 +11,7 @@ interface ExpedienteClinico {
   styleUrls: ['./expedienteclinico-view.page.scss'],
   standalone: false,
 })
-export class ExpedienteclinicoViewPage implements OnInit {
+export class ExpedienteclinicoViewPage {
 
   expediente: ExpedienteClinico | null = null;
   mensajeError: string = '';
@@ -38,7 +22,7 @@ export class ExpedienteclinicoViewPage implements OnInit {
     private expedientesService: ExpedienteclinicoService
   ) { }
 
-  ngOnInit() {
+  ionViewWillEnter() {
     this.cargarExpediente();
   }
 
@@ -60,25 +44,27 @@ export class ExpedienteclinicoViewPage implements OnInit {
 
     await loading.present();
 
-    try {
-      this.expediente = await firstValueFrom(
+        try {
+      const expediente = await firstValueFrom(
         this.expedientesService.detalle(Number(id))
       );
 
       // Si Directus devolvió el objeto paciente directamente
-      if (typeof this.expediente.idpaciente === 'object' && this.expediente.idpaciente !== null) {
-        this.expediente.pacienteDetalle = this.expediente.idpaciente as Paciente;
+      if (typeof expediente.idpaciente === 'object' && expediente.idpaciente !== null) {
+        expediente.pacienteDetalle = expediente.idpaciente as Paciente;
       } 
       // Respaldo: si vino únicamente el número, consultamos al paciente a través del servicio
-      else if (this.expediente.idpaciente) {
+      else if (expediente.idpaciente) {
         try {
-          this.expediente.pacienteDetalle = await firstValueFrom(
-            this.expedientesService.paciente(Number(this.expediente.idpaciente))
+          expediente.pacienteDetalle = await firstValueFrom(
+            this.expedientesService.paciente(Number(expediente.idpaciente))
           );
         } catch (err) {
           console.warn('No se pudo obtener el nombre del paciente por separado:', err);
         }
       }
+
+      this.expediente = expediente;
 
     } catch (error) {
       console.error('Error al cargar el expediente clínico:', error);
