@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { defer, map, Observable } from 'rxjs';
-import axios from 'axios';
+import { AuthService } from './auth';
 import { environment } from '../../environments/environment';
 
 export interface Dentista {
@@ -33,6 +33,7 @@ export interface DentistaGuardar {
 
 @Injectable({ providedIn: 'root' })
 export class DentistasService {
+  constructor(private auth: AuthService) {}
   private url = environment.apiUrl + '/items/dentista';
 
   private filtro(busqueda: string): Record<string, string> {
@@ -45,13 +46,13 @@ export class DentistasService {
   }
 
   listado(pagina = 1, porPagina = 8, busqueda = ''): Observable<Dentista[]> {
-    return defer(() => axios.get<{ data: Dentista[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: Dentista[] }>(this.url, {
       params: { page: pagina, limit: porPagina, sort: 'iddentista', ...this.filtro(busqueda) }
     })).pipe(map(response => response.data.data));
   }
 
     detalle(id: number): Observable<Dentista> {
-    return defer(() => axios.get<{ data: Dentista }>(this.url + '/' + id, {
+    return defer(() => this.auth.cliente.get<{ data: Dentista }>(this.url + '/' + id, {
       params: {
         fields: '*,especialidades.iddentistaespecialidad,especialidades.idespecialidad.idespecialidad,especialidades.idespecialidad.nombre'
       }
@@ -59,21 +60,21 @@ export class DentistasService {
   }
 
   crear(dentista: DentistaGuardar): Observable<Dentista> {
-    return defer(() => axios.post<{ data: Dentista }>(this.url, dentista))
+    return defer(() => this.auth.cliente.post<{ data: Dentista }>(this.url, dentista))
       .pipe(map(response => response.data.data));
   }
 
   actualizar(id: number, dentista: DentistaGuardar): Observable<Dentista> {
-    return defer(() => axios.patch<{ data: Dentista }>(this.url + '/' + id, dentista))
+    return defer(() => this.auth.cliente.patch<{ data: Dentista }>(this.url + '/' + id, dentista))
       .pipe(map(response => response.data.data));
   }
 
   eliminar(id: number): Observable<void> {
-    return defer(() => axios.delete(this.url + '/' + id)).pipe(map(() => undefined));
+    return defer(() => this.auth.cliente.delete(this.url + '/' + id)).pipe(map(() => undefined));
   }
 
   total(busqueda = ''): Observable<number> {
-    return defer(() => axios.get<{ data: { count: string | number }[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: { count: string | number }[] }>(this.url, {
       params: { 'aggregate[count]': '*', ...this.filtro(busqueda) }
     })).pipe(map(response => Number(response.data.data[0]?.count ?? 0)));
   }

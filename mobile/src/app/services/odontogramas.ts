@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { defer, map, Observable } from 'rxjs';
-import axios from 'axios';
+import { AuthService } from './auth';
 import { environment } from '../../environments/environment';
 
 export interface Odontograma {
@@ -23,6 +23,7 @@ export interface OdontogramaGuardar {
 
 @Injectable({ providedIn: 'root' })
 export class OdontogramasService {
+  constructor(private auth: AuthService) {}
   private url = environment.apiUrl + '/items/odontograma';
   private urlExpedientes = environment.apiUrl + '/items/expedienteclinico';
 
@@ -36,19 +37,19 @@ export class OdontogramasService {
   }
 
   listado(pagina = 1, porPagina = 5, busqueda = ''): Observable<Odontograma[]> {
-    return defer(() => axios.get<{ data: Odontograma[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: Odontograma[] }>(this.url, {
       params: { page: pagina, limit: porPagina, sort: 'idodontograma', ...this.filtro(busqueda) }
     })).pipe(map(response => response.data.data));
   }
 
   detalle(id: number): Observable<Odontograma> {
-    return defer(() => axios.get<{ data: Odontograma }>(`${this.url}/${id}`))
+    return defer(() => this.auth.cliente.get<{ data: Odontograma }>(`${this.url}/${id}`))
       .pipe(map(response => response.data.data));
   }
 
   // Trae los expedientes con los datos del paciente expandidos
   expedientes(): Observable<any[]> {
-    return defer(() => axios.get<{ data: any[] }>(this.urlExpedientes, {
+    return defer(() => this.auth.cliente.get<{ data: any[] }>(this.urlExpedientes, {
       params: {
         fields: 'idexpediente,idpaciente.*',
         limit: -1
@@ -57,21 +58,21 @@ export class OdontogramasService {
   }
 
   crear(odontograma: OdontogramaGuardar): Observable<Odontograma> {
-    return defer(() => axios.post<{ data: Odontograma }>(this.url, odontograma))
+    return defer(() => this.auth.cliente.post<{ data: Odontograma }>(this.url, odontograma))
       .pipe(map(response => response.data.data));
   }
 
   actualizar(id: number, odontograma: OdontogramaGuardar): Observable<Odontograma> {
-    return defer(() => axios.patch<{ data: Odontograma }>(`${this.url}/${id}`, odontograma))
+    return defer(() => this.auth.cliente.patch<{ data: Odontograma }>(`${this.url}/${id}`, odontograma))
       .pipe(map(response => response.data.data));
   }
 
   eliminar(id: number): Observable<void> {
-    return defer(() => axios.delete(`${this.url}/${id}`)).pipe(map(() => undefined));
+    return defer(() => this.auth.cliente.delete(`${this.url}/${id}`)).pipe(map(() => undefined));
   }
 
   total(busqueda = ''): Observable<number> {
-    return defer(() => axios.get<{ data: { count: string | number }[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: { count: string | number }[] }>(this.url, {
       params: { 'aggregate[count]': '*', ...this.filtro(busqueda) }
     })).pipe(map(response => Number(response.data.data[0]?.count ?? 0)));
   }

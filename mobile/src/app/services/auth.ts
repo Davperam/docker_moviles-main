@@ -20,12 +20,14 @@ export class AuthService {
     });
   }
 
+  /* Guarda los datos de la sesión */
   private guardar(datos: SesionDirectus): void {
     this.token = datos.access_token;
     this.refreshToken = datos.refresh_token;
     this.expira = Date.now() + Number(datos.expires);
   }
 
+  /* Inicia sesión con las credenciales proporcionadas */
   async ingresar(email: string, password: string): Promise<void> {
     const response = await axios.post<{ data: SesionDirectus }>(environment.apiUrl + '/auth/login', {
       email: email.trim(), password, mode: 'json'
@@ -33,16 +35,19 @@ export class AuthService {
     this.guardar(response.data.data);
   }
 
+  /* Registra un nuevo usuario */
   async registrar(email: string, password: string, nombre: string): Promise<void> {
     await axios.post(environment.apiUrl + '/users/register', {
       email: email.trim(), password, first_name: nombre.trim()
     });
   }
 
+  /* Verifica si la sesión está activa */
   activa(): boolean {
     return !!this.token && Date.now() < this.expira;
   }
 
+  /* Renueva el token de acceso */
   async renovar(): Promise<void> {
     const response = await axios.post<{ data: SesionDirectus }>(environment.apiUrl + '/auth/refresh', {
       refresh_token: this.refreshToken, mode: 'json'
@@ -50,6 +55,7 @@ export class AuthService {
     this.guardar(response.data.data);
   }
 
+  /* Valida la sesión actual */
   async validarSesion(): Promise<boolean> {
     try {
       if (!this.activa()) {
@@ -64,12 +70,14 @@ export class AuthService {
     }
   }
 
+  /* Limpia los datos de la sesión */
   private limpiar(): void {
     this.token = '';
     this.refreshToken = '';
     this.expira = 0;
   }
 
+  /* Cierra la sesión actual */
   async cerrarSesion(): Promise<void> {
     try {
       if (this.refreshToken) await axios.post(environment.apiUrl + '/auth/logout', {

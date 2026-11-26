@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { defer, map, Observable } from 'rxjs';
-import axios from 'axios';
+import { AuthService } from './auth';
 import { environment } from '../../environments/environment';
 
 export interface Paciente {
@@ -36,6 +36,7 @@ export interface ExpedienteClinicoGuardar {
 
 @Injectable({ providedIn: 'root' })
 export class ExpedienteclinicoService {
+  constructor(private auth: AuthService) {}
   private url = environment.apiUrl + '/items/expedienteclinico';
   private urlPacientes = environment.apiUrl + '/items/paciente';
 
@@ -48,20 +49,20 @@ export class ExpedienteclinicoService {
   }
 
   listado(pagina = 1, porPagina = 8, busqueda = ''): Observable<ExpedienteClinico[]> {
-    return defer(() => axios.get<{ data: ExpedienteClinico[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: ExpedienteClinico[] }>(this.url, {
       params: { page: pagina, limit: porPagina, sort: 'idexpediente', ...this.filtro(busqueda) }
     })).pipe(map(response => response.data.data));
   }
 
   detalle(id: number): Observable<ExpedienteClinico> {
-    return defer(() => axios.get<{ data: ExpedienteClinico }>(`${this.url}/${id}`, {
+    return defer(() => this.auth.cliente.get<{ data: ExpedienteClinico }>(`${this.url}/${id}`, {
       params: { fields: '*,idpaciente.*,alergias.idexpedientealergia,alergias.idalergia.idalergia,alergias.idalergia.nombre'}
     })).pipe(map(response => response.data.data));
   }
 
   // Catálogo de pacientes para el select del formulario
   pacientes(): Observable<Paciente[]> {
-    return defer(() => axios.get<{ data: Paciente[] }>(this.urlPacientes, {
+    return defer(() => this.auth.cliente.get<{ data: Paciente[] }>(this.urlPacientes, {
       params: {
         fields: 'idpaciente,nombre,paterno,materno',
         sort: 'nombre',
@@ -72,26 +73,26 @@ export class ExpedienteclinicoService {
 
   // Respaldo para obtener un solo paciente si no viene expandido
   paciente(id: number): Observable<Paciente> {
-    return defer(() => axios.get<{ data: Paciente }>(`${this.urlPacientes}/${id}`))
+    return defer(() => this.auth.cliente.get<{ data: Paciente }>(`${this.urlPacientes}/${id}`))
       .pipe(map(response => response.data.data));
   }
 
   crear(expediente: ExpedienteClinicoGuardar): Observable<ExpedienteClinico> {
-    return defer(() => axios.post<{ data: ExpedienteClinico }>(this.url, expediente))
+    return defer(() => this.auth.cliente.post<{ data: ExpedienteClinico }>(this.url, expediente))
       .pipe(map(response => response.data.data));
   }
 
   actualizar(id: number, expediente: ExpedienteClinicoGuardar): Observable<ExpedienteClinico> {
-    return defer(() => axios.patch<{ data: ExpedienteClinico }>(`${this.url}/${id}`, expediente))
+    return defer(() => this.auth.cliente.patch<{ data: ExpedienteClinico }>(`${this.url}/${id}`, expediente))
       .pipe(map(response => response.data.data));
   }
 
   eliminar(id: number): Observable<void> {
-    return defer(() => axios.delete(`${this.url}/${id}`)).pipe(map(() => undefined));
+    return defer(() => this.auth.cliente.delete(`${this.url}/${id}`)).pipe(map(() => undefined));
   }
 
   total(busqueda = ''): Observable<number> {
-    return defer(() => axios.get<{ data: { count: string | number }[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: { count: string | number }[] }>(this.url, {
       params: { 'aggregate[count]': '*', ...this.filtro(busqueda) }
     })).pipe(map(response => Number(response.data.data[0]?.count ?? 0)));
   }

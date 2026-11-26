@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { defer, map, Observable } from 'rxjs';
-import axios from 'axios';
+import { AuthService } from './auth';
 import { environment } from '../../environments/environment';
 
 export interface Alergia {
@@ -17,6 +17,7 @@ export interface AlergiaGuardar {
 
 @Injectable({ providedIn: 'root' })
 export class AlergiasService {
+  constructor(private auth: AuthService) {}
   private url = environment.apiUrl + '/items/alergia';
 
   private filtro(busqueda: string): Record<string, string> {
@@ -28,14 +29,14 @@ export class AlergiasService {
   }
 
   listado(pagina = 1, porPagina = 3, busqueda = ''): Observable<Alergia[]> {
-    return defer(() => axios.get<{ data: Alergia[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: Alergia[] }>(this.url, {
       params: { page: pagina, limit: porPagina, sort: 'idalergia', ...this.filtro(busqueda) }
     })).pipe(map(response => response.data.data));
   }
 
   /* para cargar todas las alergias activas en el selector sin afectar tu listado principal */
   catalogo(): Observable<Alergia[]> {
-    return defer(() => axios.get<{ data: Alergia[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: Alergia[] }>(this.url, {
       params: {
         fields: 'idalergia,nombre',
         filter: JSON.stringify({ activo: { _eq: 1 } }),
@@ -46,26 +47,26 @@ export class AlergiasService {
   }
 
   detalle(id: number): Observable<Alergia> {
-    return defer(() => axios.get<{ data: Alergia }>(this.url + '/' + id))
+    return defer(() => this.auth.cliente.get<{ data: Alergia }>(this.url + '/' + id))
       .pipe(map(response => response.data.data));
   }
 
   crear(alergia: AlergiaGuardar): Observable<Alergia> {
-    return defer(() => axios.post<{ data: Alergia }>(this.url, alergia))
+    return defer(() => this.auth.cliente.post<{ data: Alergia }>(this.url, alergia))
       .pipe(map(response => response.data.data));
   }
 
   actualizar(id: number, alergia: AlergiaGuardar): Observable<Alergia> {
-    return defer(() => axios.patch<{ data: Alergia }>(this.url + '/' + id, alergia))
+    return defer(() => this.auth.cliente.patch<{ data: Alergia }>(this.url + '/' + id, alergia))
       .pipe(map(response => response.data.data));
   }
 
   eliminar(id: number): Observable<void> {
-    return defer(() => axios.delete(this.url + '/' + id)).pipe(map(() => undefined));
+    return defer(() => this.auth.cliente.delete(this.url + '/' + id)).pipe(map(() => undefined));
   }
 
   total(busqueda = ''): Observable<number> {
-    return defer(() => axios.get<{ data: { count: string | number }[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: { count: string | number }[] }>(this.url, {
       params: { 'aggregate[count]': '*', ...this.filtro(busqueda) }
     })).pipe(map(response => Number(response.data.data[0]?.count ?? 0)));
   }

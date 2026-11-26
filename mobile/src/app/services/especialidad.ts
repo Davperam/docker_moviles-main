@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { defer, map, Observable } from 'rxjs';
-import axios from 'axios';
+import { AuthService } from './auth';
 import { environment } from '../../environments/environment';
 
 export interface Especialidad {
@@ -18,10 +18,11 @@ export interface EspecialidadGuardar {
 
 @Injectable({ providedIn: 'root' })
 export class EspecialidadService {
+  constructor(private auth: AuthService) {}
   private url = environment.apiUrl + '/items/especialidad';
 
   catalogo(): Observable<Especialidad[]> {
-    return defer(() => axios.get<{ data: Especialidad[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: Especialidad[] }>(this.url, {
       params: {
         fields: 'idespecialidad,nombre',
         filter: JSON.stringify({ activo: { _eq: 1 } }),
@@ -40,32 +41,32 @@ export class EspecialidadService {
   }
 
   listado(pagina = 1, porPagina = 8, busqueda = ''): Observable<Especialidad[]> {
-    return defer(() => axios.get<{ data: Especialidad[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: Especialidad[] }>(this.url, {
       params: { page: pagina, limit: porPagina, sort: 'idespecialidad', ...this.filtro(busqueda) }
     })).pipe(map(response => response.data.data));
   }
 
   detalle(id: number): Observable<Especialidad> {
-    return defer(() => axios.get<{ data: Especialidad }>(this.url + '/' + id))
+    return defer(() => this.auth.cliente.get<{ data: Especialidad }>(this.url + '/' + id))
       .pipe(map(response => response.data.data));
   }
 
   crear(especialidad: EspecialidadGuardar): Observable<Especialidad> {
-    return defer(() => axios.post<{ data: Especialidad }>(this.url, especialidad))
+    return defer(() => this.auth.cliente.post<{ data: Especialidad }>(this.url, especialidad))
       .pipe(map(response => response.data.data));
   }
 
   actualizar(id: number, especialidad: EspecialidadGuardar): Observable<Especialidad> {
-    return defer(() => axios.patch<{ data: Especialidad }>(this.url + '/' + id, especialidad))
+    return defer(() => this.auth.cliente.patch<{ data: Especialidad }>(this.url + '/' + id, especialidad))
       .pipe(map(response => response.data.data));
   }
 
   eliminar(id: number): Observable<void> {
-    return defer(() => axios.delete(this.url + '/' + id)).pipe(map(() => undefined));
+    return defer(() => this.auth.cliente.delete(this.url + '/' + id)).pipe(map(() => undefined));
   }
 
   total(busqueda = ''): Observable<number> {
-    return defer(() => axios.get<{ data: { count: string | number }[] }>(this.url, {
+    return defer(() => this.auth.cliente.get<{ data: { count: string | number }[] }>(this.url, {
       params: { 'aggregate[count]': '*', ...this.filtro(busqueda) }
     })).pipe(map(response => Number(response.data.data[0]?.count ?? 0)));
   }
